@@ -1,5 +1,5 @@
 #include <serialize.h>
-
+#include <stdarg.h>
 #include "packet.h"
 #include "constants.h"
 
@@ -88,6 +88,14 @@ void sendMessage(const char *message)
   messagePacket.packetType=PACKET_TYPE_MESSAGE;
   strncpy(messagePacket.data, message, MAX_STR_LEN);
   sendResponse(&messagePacket);
+}
+
+void dbprintf(char *format, ...) {
+  va_list args;
+  char buffer[128];
+  va_start(args, format);
+  vsprintf(buffer, format, args);
+  sendMessage(buffer);
 }
 
 void sendBadPacket()
