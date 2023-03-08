@@ -345,6 +345,24 @@ void setupMotors()
    *    B1IN - Pin 10, PB2, OC1B
    *    B2In - pIN 11, PB3, OC2A
    */
+
+   /*
+   //setup pwm for timers 0 and 2 first since they are the same
+   //set prescaler at 256
+   TCCR0B = 0b00000100;
+   TCNT0 = 0;
+   TCCR0A = 0b00000001;
+   TCCR2B = 0b00000100;
+   TCNT2 = 0;
+   TCCR2A = 0b00000001;
+
+   //setup pwm for timer 1
+   TCCR1B = 0b00000100;
+   TCNT1 = 0;
+   //mode 3 phase correct 10 bits
+   TCCR1A =  0b00000011;
+   */
+
 }
 
 // Start the PWM for Alex's motors.
@@ -538,20 +556,20 @@ void handleCommand(TPacket *command)
         forward((float) command->params[0], (float) command->params[1]);
         break;
     case COMMAND_REVERSE:
-	      sendOK();
+	sendOK();
         reverse((float) command->params[0], (float) command->params[1]);
         break;
     case COMMAND_TURN_LEFT:
-	      sendOK();
+	sendOK();
         left((float) command->params[0], (float) command->params[1]);
         break;
     case COMMAND_TURN_RIGHT:
-	      sendOK();
+	sendOK();
         right((float) command->params[0], (float) command->params[1]);
         break;
     case COMMAND_STOP:
-	      sendOK();
-	      stop();
+	sendOK();
+	stop();
         break;
 	
     /*
