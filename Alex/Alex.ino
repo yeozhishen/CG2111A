@@ -349,18 +349,18 @@ void setupMotors()
    /*
    //setup pwm for timers 0 and 2 first since they are the same
    //set prescaler at 256
+   TCCR0A = 0b00000001;
    TCCR0B = 0b00000100;
    TCNT0 = 0;
-   TCCR0A = 0b00000001;
+   TCCR2A = 0b00000001;
    TCCR2B = 0b00000100;
    TCNT2 = 0;
-   TCCR2A = 0b00000001;
 
    //setup pwm for timer 1
-   TCCR1B = 0b00000100;
-   TCNT1 = 0;
    //mode 3 phase correct 10 bits
    TCCR1A =  0b00000011;
+   TCCR1B = 0b00000100;
+   TCNT1 = 0;
    */
 
 }
