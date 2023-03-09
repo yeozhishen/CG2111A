@@ -22,13 +22,20 @@ volatile TDirection dir = STOP;
 // Number of ticks per revolution from the 
 // wheel encoder.
 
-#define COUNTS_PER_REV      180
+#define LEFT_COUNTS_PER_REV      180
+#define RIGHT_COUNTS_PER_REV 180
 
 // Wheel circumference in cm.
 // We will use this to calculate forward/backward distance traveled 
 // by taking revs * WHEEL_CIRC
 
 #define WHEEL_CIRC (6.4*PI)
+#define ALEX_LENGTH 17
+#define ALEX_BREADTH 7
+
+//compute these in the setup function
+float alexDiagonal = 0;
+float alexCirc = 0;
 
 // Motor control pins. You need to adjust these till
 // Alex moves in the correct direction
@@ -67,6 +74,10 @@ volatile unsigned long reverseDist;
 //keep track of dist covered
 unsigned long deltaDist;
 unsigned long newDist;
+unsigned long leftDeltaTicks;
+unsigned long rightDeltaTicks;
+unsigned long leftTargetTicks;
+unsigned long rightTargetTicks;
 
 
 /*
@@ -226,12 +237,12 @@ void leftISR()
 			leftForwardTicks++;
 			//Serial.print("LEFT Forward: ");
 			//Serial.println(leftForwardTicks);
-			forwardDist = (float)(WHEEL_CIRC / COUNTS_PER_REV) * (leftForwardTicks);
+			forwardDist = (float)(WHEEL_CIRC / LEFT_COUNTS_PER_REV) * (leftForwardTicks);
 		case(BACKWARD):
 			leftReverseTicks++;
 			//Serial.print("LEFT Reverse: ");
 			//Serial.println(leftReverseTicks);
-			reverseDist = (float)(WHEEL_CIRC / COUNTS_PER_REV) * (leftReverseTicks);
+			reverseDist = (float)(WHEEL_CIRC / LEFT_COUNTS_PER_REV) * (leftReverseTicks);
 		case(LEFT):
 			leftReverseTicksTurns++;
 		case(RIGHT):
@@ -240,11 +251,11 @@ void leftISR()
 
 	if(dir == FORWARD)
 	{
-		forwardDist = (unsigned long) ((float) leftForwardTicks / COUNTS_PER_REV * WHEEL_CIRC);
+		forwardDist = (unsigned long) ((float) leftForwardTicks / LEFT_COUNTS_PER_REV * WHEEL_CIRC);
 	}
 	if(dir == BACKWARD)
 	{
-		reverseDist = (unsigned long) ((float) leftReverseTicks / COUNTS_PER_REV * WHEEL_CIRC);
+		reverseDist = (unsigned long) ((float) leftReverseTicks / LEFT_COUNTS_PER_REV * WHEEL_CIRC);
 	}
 }
 
@@ -256,12 +267,12 @@ void rightISR()
 			rightForwardTicks++;
 			//Serial.print("RIGHT Forward: ");
 			//Serial.println(rightForwardTicks);
-			forwardDist = (float)(WHEEL_CIRC / COUNTS_PER_REV) * (rightForwardTicks);
+			forwardDist = (float)(WHEEL_CIRC / RIGHT_COUNTS_PER_REV) * (rightForwardTicks);
 		case(BACKWARD):
 			rightReverseTicks++;
 			//Serial.print("RIGHT Reverse: ");
 			//Serial.println(rightReverseTicks);
-			forwardDist = (float)(WHEEL_CIRC / COUNTS_PER_REV) * (rightReverseTicks);
+			forwardDist = (float)(WHEEL_CIRC / RIGHT_COUNTS_PER_REV) * (rightReverseTicks);
 		case(LEFT):
 			rightForwardTicksTurns++;
 		case(RIGHT):
@@ -467,6 +478,38 @@ void reverse(float dist, float speed)
 	analogWrite(RF, 0);
 }
 
+//function to estimate number of wheel ticks needed to turn an angle for left wheel
+unsigned long computeLeftDeltaTicks(float ang)
+{
+	//When Alex is moving in a straight line, he will move WHEEL_CIRC cm forward (or backward) in one
+	//wheel revolution. We assume that when Alex is moving in circles “on a dime”, the wheels make
+	//the same WHEEL_CIRC cm angular distance in one revolution.
+	//The total number of wheel turns required to turn 360 degrees is therefore AlexCirc/WHEEL_CIRC,
+	//where AlexCirc is the circumference of the circle made by Alex tunring on a dime. (Once again, to
+	//“turn on a dime” means that Alex rotates about its center axis, without moving forward or
+	//backward).
+	//To turn ang degrees, the number of wheel turns is ang/360.0 * AlexCIRC/WHEEL_CIRC.
+	//The number of ticks is ang/360.0 * AlexCIRC/WHEEL_CIRC * COUNTS_PER_REV
+	unsigned long leftTicks = (unsigned long) ((ang * alexCirc * RIGHT_COUNTS_PER_REV) / (360.0 * WHEEL_CIRC));
+	return leftTicks;
+}
+
+//function to estimate number of wheel ticks needed to turn an angle for right wheel
+unsigned long computeRightDeltaTicks(float ang)
+{
+	//When Alex is moving in a straight line, he will move WHEEL_CIRC cm forward (or backward) in one
+	//wheel revolution. We assume that when Alex is moving in circles “on a dime”, the wheels make
+	//the same WHEEL_CIRC cm angular distance in one revolution.
+	//The total number of wheel turns required to turn 360 degrees is therefore AlexCirc/WHEEL_CIRC,
+	//where AlexCirc is the circumference of the circle made by Alex tunring on a dime. (Once again, to
+	//“turn on a dime” means that Alex rotates about its center axis, without moving forward or
+	//backward).
+	//To turn ang degrees, the number of wheel turns is ang/360.0 * AlexCIRC/WHEEL_CIRC.
+	//The number of ticks is ang/360.0 * AlexCIRC/WHEEL_CIRC * COUNTS_PER_REV
+	unsigned long rightTicks = (unsigned long) ((ang * alexCirc * RIGHT_COUNTS_PER_REV) / (360.0 * WHEEL_CIRC));
+	return rightTicks;
+}
+
 // Turn Alex left "ang" degrees at speed "speed".
 // "speed" is expressed as a percentage. E.g. 50 is
 // turn left at half speed.
@@ -474,6 +517,18 @@ void reverse(float dist, float speed)
 // turn left indefinitely.
 void left(float ang, float speed)
 {
+	if(ang == 0)
+	{
+		leftDeltaTicks = 99999999;
+		rightDeltaTicks = 99999999;
+	}
+	else
+	{
+		leftDeltaTicks = computeLeftDeltaTicks(ang);
+		rightDeltaTicks = computeRightDeltaTicks(ang);
+	}
+	leftTargetTicks = leftReverseTicksTurns + leftDeltaTicks;
+	rightTargetTicks = rightForwardTicksTurns + rightDeltaTicks;
 	dir = LEFT;
 	int val = pwmVal(speed);
 
@@ -496,6 +551,18 @@ void right(float ang, float speed)
 {
 	dir = RIGHT;
 	int val = pwmVal(speed);
+	if(ang == 0)
+	{
+		leftDeltaTicks = 99999999;
+		rightDeltaTicks = 99999999;
+	}
+	else
+	{
+		leftDeltaTicks = computeLeftDeltaTicks(ang);
+		rightDeltaTicks = computeRightDeltaTicks(ang);
+	}
+	leftTargetTicks = leftForwardTicksTurns + leftDeltaTicks;
+	rightTargetTicks = rightReverseTicksTurns + rightDeltaTicks;
 
 	// For now we will ignore ang. We will fix this in Week 9.
 	// We will also replace this code with bare-metal later.
@@ -663,7 +730,8 @@ void waitForHello()
 
 void setup() {
 	// put your setup code here, to run once:
-
+	alexDiagonal = sqrt((ALEX_LENGTH * ALEX_LENGTH) + (ALEX_BREADTH * ALEX_BREADTH));
+	alexCirc = PI * alexDiagonal;
 	cli();
 	setupEINT();
 	setupSerial();
@@ -752,5 +820,38 @@ void loop() {
 					newDist=0;
 					stop();
 				}
+	}
+	if(leftDeltaTicks > 0 || rightDeltaTicks > 0)
+	{
+		if(dir == LEFT)
+		{
+			if(leftReverseTicksTurns >= leftTargetTicks)
+			{
+				leftDeltaTicks = 0;
+				rightDeltaTicks = 0;
+				leftTargetTicks = 0;
+				rightTargetTicks = 0;
+				stop();
+			}
+		}
+		else if(dir == RIGHT)
+		{
+			if(rightReverseTicksTurns >= rightTargetTicks)
+			{
+				leftDeltaTicks = 0;
+				rightDeltaTicks = 0;
+				leftTargetTicks = 0;
+				rightTargetTicks = 0;
+				stop();
+			}
+		}
+		else if(dir == STOP)
+		{			
+				leftDeltaTicks = 0;
+				rightDeltaTicks = 0;
+				leftTargetTicks = 0;
+				rightTargetTicks = 0;
+				stop();
+		}
 	}
 }
