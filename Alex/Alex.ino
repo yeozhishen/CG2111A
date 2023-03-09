@@ -236,8 +236,8 @@ void rightISR()
     case(FORWARD):
       rightForwardTicks++;
       //Serial.print("RIGHT Forward: ");
-      //Serial.println(rightReverseTicks);
-      forwardDist = (float)(WHEEL_CIRC / COUNTS_PER_REV) * (rightReverseTicks);
+      //Serial.println(rightForwardTicks);
+      forwardDist = (float)(WHEEL_CIRC / COUNTS_PER_REV) * (rightForwardTicks);
     case(BACKWARD):
       rightReverseTicks++;
       //Serial.print("RIGHT Reverse: ");
