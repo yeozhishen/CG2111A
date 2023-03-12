@@ -22,8 +22,8 @@ volatile TDirection dir = STOP;
 // Number of ticks per revolution from the 
 // wheel encoder.
 
-#define LEFT_COUNTS_PER_REV 61
-#define RIGHT_COUNTS_PER_REV 107
+#define LEFT_COUNTS_PER_REV 120
+#define RIGHT_COUNTS_PER_REV 214
 
 // Wheel circumference in cm.
 // We will use this to calculate forward/backward distance traveled 
