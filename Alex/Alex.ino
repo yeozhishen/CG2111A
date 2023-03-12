@@ -22,7 +22,7 @@ volatile TDirection dir = STOP;
 // Number of ticks per revolution from the 
 // wheel encoder.
 
-#define LEFT_COUNTS_PER_REV 106
+#define LEFT_COUNTS_PER_REV 110
 #define RIGHT_COUNTS_PER_REV 170
 
 // Wheel circumference in cm.
