@@ -237,12 +237,12 @@ void leftISR()
 			leftForwardTicks++;
 			//Serial.print("LEFT Forward: ");
 			//Serial.println(leftForwardTicks);
-			forwardDist = (float)(WHEEL_CIRC / LEFT_COUNTS_PER_REV) * (leftForwardTicks);
+			//forwardDist = (float)(WHEEL_CIRC / LEFT_COUNTS_PER_REV) * (leftForwardTicks);
 		case(BACKWARD):
 			leftReverseTicks++;
 			//Serial.print("LEFT Reverse: ");
 			//Serial.println(leftReverseTicks);
-			reverseDist = (float)(WHEEL_CIRC / LEFT_COUNTS_PER_REV) * (leftReverseTicks);
+			//reverseDist = (float)(WHEEL_CIRC / LEFT_COUNTS_PER_REV) * (leftReverseTicks);
 		case(LEFT):
 			leftReverseTicksTurns++;
 		case(RIGHT):
@@ -267,12 +267,12 @@ void rightISR()
 			rightForwardTicks++;
 			//Serial.print("RIGHT Forward: ");
 			//Serial.println(rightForwardTicks);
-			forwardDist = (float)(WHEEL_CIRC / RIGHT_COUNTS_PER_REV) * (rightForwardTicks);
+			//forwardDist = (float)(WHEEL_CIRC / RIGHT_COUNTS_PER_REV) * (rightForwardTicks);
 		case(BACKWARD):
 			rightReverseTicks++;
 			//Serial.print("RIGHT Reverse: ");
 			//Serial.println(rightReverseTicks);
-			forwardDist = (float)(WHEEL_CIRC / RIGHT_COUNTS_PER_REV) * (rightReverseTicks);
+			//forwardDist = (float)(WHEEL_CIRC / RIGHT_COUNTS_PER_REV) * (rightReverseTicks);
 		case(LEFT):
 			rightForwardTicksTurns++;
 		case(RIGHT):
