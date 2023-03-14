@@ -22,15 +22,15 @@ volatile TDirection dir = STOP;
 // Number of ticks per revolution from the 
 // wheel encoder.
 
-#define LEFT_COUNTS_PER_REV 110
-#define RIGHT_COUNTS_PER_REV 170
+#define LEFT_COUNTS_PER_REV 135
+#define RIGHT_COUNTS_PER_REV 177
 
 // Wheel circumference in cm.
 // We will use this to calculate forward/backward distance traveled 
 // by taking revs * WHEEL_CIRC
 
-#define WHEEL_CIRC (6.4*PI)
-#define ALEX_LENGTH 17
+#define WHEEL_CIRC (6.4*3.14159)
+#define ALEX_LENGTH 14
 #define ALEX_BREADTH 7
 
 //compute these in the setup function
@@ -490,7 +490,7 @@ unsigned long computeLeftDeltaTicks(float ang)
 	//backward).
 	//To turn ang degrees, the number of wheel turns is ang/360.0 * AlexCIRC/WHEEL_CIRC.
 	//The number of ticks is ang/360.0 * AlexCIRC/WHEEL_CIRC * COUNTS_PER_REV
-	unsigned long leftTicks = (unsigned long) ((ang * alexCirc * RIGHT_COUNTS_PER_REV) / (360.0 * WHEEL_CIRC));
+	unsigned long leftTicks = (unsigned long) ((ang * alexCirc * LEFT_COUNTS_PER_REV) / (360.0 * WHEEL_CIRC));
 	return leftTicks;
 }
 
@@ -825,7 +825,7 @@ void loop() {
 	{
 		if(dir == LEFT)
 		{
-			if(leftReverseTicksTurns >= leftTargetTicks)
+			if(leftReverseTicksTurns >= leftTargetTicks || rightForwardTicksTurns >= rightTargetTicks)
 			{
 				leftDeltaTicks = 0;
 				rightDeltaTicks = 0;
@@ -836,7 +836,7 @@ void loop() {
 		}
 		else if(dir == RIGHT)
 		{
-			if(rightReverseTicksTurns >= rightTargetTicks)
+			if(rightReverseTicksTurns >= rightTargetTicks || leftForwardTicksTurns >= leftTargetTicks)
 			{
 				leftDeltaTicks = 0;
 				rightDeltaTicks = 0;
