@@ -1,2 +1,5 @@
 signing.key
 alex.key
+laptop.key
+laptop.crt
+laptop.csr
