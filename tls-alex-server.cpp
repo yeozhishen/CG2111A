@@ -17,9 +17,9 @@
 
 /* TODO: #define constants for the  filenames for Alex's private key, certificate, CA certificate name,
         and the Common Name for your laptop */
-#define ALEX_PRIVATE_KEY "/home/cg2111a-group2b/alex.key"
-#define ALEX_CERTIFICATE "/home/cg2111a-group2b/alex.crt"
-#define CA_CERTIFICATE "/home/cg2111a-group2b/signing.pem"
+#define ALEX_PRIVATE_KEY "alex.key"
+#define ALEX_CERTIFICATE "alex.crt"
+#define CA_CERTIFICATE "signing.pem"
 #define CLIENT_NAME "laptop.epp.com"
 /* END TODO */
 
