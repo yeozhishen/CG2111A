@@ -44,6 +44,16 @@ float alexCirc = 0;
 #define RF                  10  // Right forward pin
 #define RR                  11  // Right reverse pin
 
+//color sensor setup definitions
+//port D
+#define COLOR_S0 0b00010000 //pin4
+#define COLOR_S1 0b10000000 //pin 7
+//port B
+#define COLOR_S2 0b00000001 //pin 8
+#define COLOR_S3 0b00010000 //pin 12
+#define COLOR_OUTPUT 0b00100000 //pin 13 
+
+
 /*
  *    Alex's State Variables
  */
@@ -376,7 +386,7 @@ void setupMotors()
 	 *    B2In - pIN 11, PB3, OC2A
 	 */
 
-	/*
+	
 	//setup pwm for timers 0 and 2 first since they are the same
 	//set prescaler at 256
 	TCCR0A = 0b00000001;
@@ -387,11 +397,11 @@ void setupMotors()
 	TCNT2 = 0;
 
 	//setup pwm for timer 1
-	//mode 3 phase correct 10 bits
-	TCCR1A =  0b00000011;
+	//mode 3 phase correct 8 bits
+	TCCR1A =  0b00000001;
 	TCCR1B = 0b00000100;
 	TCNT1 = 0;
-	 */
+	 
 
 }
 
@@ -400,7 +410,8 @@ void setupMotors()
 // blank.
 void startMotors()
 {
-
+ DDRD |= 0b01100000;
+ DDRB |= 0b00001100;
 }
 
 // Convert percentages to PWM values
@@ -424,6 +435,14 @@ void forward(float dist, float speed)
 {
 	dir = FORWARD;
 	int val = pwmVal(speed);
+  //baremetal wpm setting
+    OCR0A = val;
+    OCR0B = val;
+    OCR1A = val;
+    OCR1B = val;
+    OCR2A = val;
+    OCR2B = val;
+  
 	if (dist > 0)
 	{
 		deltaDist = dist;
@@ -440,11 +459,15 @@ void forward(float dist, float speed)
 	// LF = Left forward pin, LR = Left reverse pin
 	// RF = Right forward pin, RR = Right reverse pin
 	// This will be replaced later with bare-metal code.
-
-	analogWrite(LF, val);
-	analogWrite(RF, val);
-	analogWrite(LR,0);
-	analogWrite(RR, 0);
+  // turn on bare metal pwm
+    TCCR0A |= 0b00100000;
+    TCCR2A |= 0b00000000;
+    TCCR1A |= 0b00100000;
+   
+	//analogWrite(LF, val);
+	//analogWrite(RF, val);
+	//analogWrite(LR,0);
+	//analogWrite(RR, 0);
 }
 
 // Reverse Alex "dist" cm at speed "speed".
@@ -454,8 +477,17 @@ void forward(float dist, float speed)
 // continue reversing indefinitely.
 void reverse(float dist, float speed)
 {
+  
 	dir = BACKWARD;
 	int val = pwmVal(speed);
+  //baremetal wpm setting
+    OCR0A = val;
+    OCR0B = val;
+    OCR1A = val;
+    OCR1B = val;
+    OCR2A = val;
+    OCR2B = val;
+  
 	if (dist > 0)
 	{
 		deltaDist = dist;
@@ -468,14 +500,18 @@ void reverse(float dist, float speed)
 	// For now we will ignore dist and 
 	// reverse indefinitely. We will fix this
 	// in Week 9.
-
+// turn on bare metal pwm
+    TCCR0A |= 0b10000000;
+    TCCR2A |= 0b10000000;
+    TCCR1A |= 0b00000000;
+   
 	// LF = Left forward pin, LR = Left reverse pin
 	// RF = Right forward pin, RR = Right reverse pin
 	// This will be replaced later with bare-metal code.
-	analogWrite(LR, val);
-	analogWrite(RR, val);
-	analogWrite(LF, 0);
-	analogWrite(RF, 0);
+	//analogWrite(LR, val);
+	//analogWrite(RR, val);
+	//analogWrite(LF, 0);
+	//analogWrite(RF, 0);
 }
 
 //function to estimate number of wheel ticks needed to turn an angle for left wheel
@@ -531,15 +567,29 @@ void left(float ang, float speed)
 	rightTargetTicks = rightForwardTicksTurns + rightDeltaTicks;
 	dir = LEFT;
 	int val = pwmVal(speed);
+    //baremetal wpm setting
+    OCR0A = val;
+    OCR0B = val;
+    OCR1A = val;
+    OCR1B = val;
+    OCR2A = val;
+    OCR2B = val;
+  
 
 	// For now we will ignore ang. We will fix this in Week 9.
 	// We will also replace this code with bare-metal later.
 	// To turn left we reverse the left wheel and move
 	// the right wheel forward.
-	analogWrite(LR, val);
-	analogWrite(RF, val);
-	analogWrite(LF, 0);
-	analogWrite(RR, 0);
+ // turn on bare metal pwm
+    TCCR0A |= 0b10000000;
+    TCCR2A |= 0b00000000;
+    TCCR1A |= 0b00100000;
+   
+
+	//analogWrite(LR, val);
+	//analogWrite(RF, val);
+	//analogWrite(LF, 0);
+	//analogWrite(RR, 0);
 }
 
 // Turn Alex right "ang" degrees at speed "speed".
@@ -551,6 +601,14 @@ void right(float ang, float speed)
 {
 	dir = RIGHT;
 	int val = pwmVal(speed);
+      //baremetal wpm setting
+    OCR0A = val;
+    OCR0B = val;
+    OCR1A = val;
+    OCR1B = val;
+    OCR2A = val;
+    OCR2B = val;
+  
 	if(ang == 0)
 	{
 		leftDeltaTicks = 99999999;
@@ -568,20 +626,30 @@ void right(float ang, float speed)
 	// We will also replace this code with bare-metal later.
 	// To turn right we reverse the right wheel and move
 	// the left wheel forward.
-	analogWrite(RR, val);
-	analogWrite(LF, val);
-	analogWrite(LR, 0);
-	analogWrite(RF, 0);
+   // turn on bare metal pwm
+    TCCR0A |= 0b00100000;
+    TCCR2A |= 0b10000000;
+    TCCR1A |= 0b00000000;
+   
+	//analogWrite(RR, val);
+	//analogWrite(LF, val);
+	//analogWrite(LR, 0);
+	//analogWrite(RF, 0);
 }
 
 // Stop Alex. To replace with bare-metal code later.
 void stop()
 {
 	dir = STOP;
-	analogWrite(LF, 0);
-	analogWrite(LR, 0);
-	analogWrite(RF, 0);
-	analogWrite(RR, 0);
+	//analogWrite(LF, 0);
+	//analogWrite(LR, 0);
+	//analogWrite(RF, 0);
+	//analogWrite(RR, 0);
+ // turn on bare metal pwm
+    TCCR0A &= ~(0b11110000);
+    TCCR2A &= ~(0b11110000);
+    TCCR1A &= ~(0b11110000);
+   
 }
 
 /*
