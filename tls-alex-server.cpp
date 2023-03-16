@@ -10,7 +10,7 @@
 #define PORT_NAME			"/dev/ttyACM0"
 /* END TODO */
 
-#define BAUD_RATE			B57600
+#define BAUD_RATE			B9600
 
 // TLS Port Number
 #define SERVER_PORT			5000
@@ -196,7 +196,7 @@ void sendNetworkData(const char *data, int len)
             /* TODO: Implement SSL write here to write data to the network. Note that
               handleNetworkData should already have set tls_conn to point to the TLS
               connection we want to write to. */
-		sslWrite(tls_conn,data,len);
+		c = sslWrite(tls_conn,data,len);
             /* END TODO */
 
         }
@@ -298,7 +298,7 @@ void *worker(void *conn)
 	while(networkActive)
 	{
 		/* TODO: Implement SSL read into buffer */
-		sslRead(conn, buffer, sizeof(buffer));
+		len = sslRead(conn, buffer, sizeof(buffer));
 
 		/* END TODO */
 		// As long as we are getting data, network is active
