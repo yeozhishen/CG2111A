@@ -217,14 +217,12 @@ void *writerThread(void *conn)
 #define CLIENT_PRIVATE_KEY "laptop.key"
 #define CLIENT_CERTIFICATE "laptop.crt"
 #define CA_CERTIFICATE "signing.pem"
-#define PORT_NUMBER 5000
-#define SERVER_NAME "192.168.50.11"
 #define SERVER_NAME_ON_CERT "alex.epp.com"
 /* END TODO */
 void connectToServer(const char *serverName, int portNum)
 {
     /* TODO: Create a new client */
-	createClient(SERVER_NAME, PORT_NUMBER, 1, CA_CERTIFICATE, SERVER_NAME_ON_CERT, 1, CLIENT_CERTIFICATE, CLIENT_PRIVATE_KEY, readerThread, writerThread);
+	createClient(serverName, portNum, 1, CA_CERTIFICATE, SERVER_NAME_ON_CERT, 1, CLIENT_CERTIFICATE, CLIENT_PRIVATE_KEY, readerThread, writerThread);
     /* END TODO */
 }
 
