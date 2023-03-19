@@ -809,8 +809,6 @@ void setupColorSensor()
   //Setting frequency scaling to 20% by setting S0 to HIGH and S1 to LOW
   PORTD |= COLOR_S0;
   PORTD &= ~(COLOR_S1);
-
-  Serial.begin(9600);
 }
 
 void readColorValues()
@@ -821,10 +819,10 @@ void readColorValues()
   PORTB &= ~((COLOR_S2) | (COLOR_S3));
 
   //Reading output frequency
-  frequency = pulseIn(COLOR_OUTPUT, LOW);
+  frequency = pulseIn(13, LOW);
 
   //Printing value on serial monitor
-  Serial.print("R= "); //Printing name
+  Serial.print("R= ");
   Serial.print(frequency);
   Serial.print(" ");
   delay(100);
@@ -833,29 +831,28 @@ void readColorValues()
   PORTB |= ((COLOR_S2) | (COLOR_S3));
 
   //Reading output frequency
-  frequency = pulseIn(COLOR_OUTPUT, LOW);
+  frequency = pulseIn(13, LOW);
 
   //Printing value on serial monitor
-  Serial.print("G= "); //Printing name
+  Serial.print("G= ");
   Serial.print(frequency);
   Serial.print(" ");
   delay(100);
-
   
   //Setting BLUE filtered photodiodes to be read
   PORTB &= ~(COLOR_S2);
   PORTB |= (COLOR_S3);
 
   //Reading output frequency
-  frequency = pulseIn(COLOR_OUTPUT, LOW);
+  frequency = pulseIn(13, LOW);
 
   //Printing value on serial monitor
-  Serial.print("B= "); //Printing name
+  Serial.print("B= ");
   Serial.print(frequency);
   Serial.print(" ");
   delay(100);
   
-  
+  Serial.println("");
 }
 
 void setup() {
