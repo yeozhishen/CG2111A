@@ -37,7 +37,7 @@ volatile TDirection dir = STOP;
 float alexDiagonal = 0;
 float alexCirc = 0;
 
-// Motor control pins. You need to adjust these till
+// Motor control pins. You need to adjust these till+
 // Alex moves in the correct direction
 #define LF                  5   // Left forward pin
 #define LR                  6   // Left reverse pin
@@ -51,7 +51,10 @@ float alexCirc = 0;
 //port B
 #define COLOR_S2 0b00000001 //pin 8
 #define COLOR_S3 0b00010000 //pin 12
-#define COLOR_OUTPUT 0b00100000 //pin 13 
+#define COLOR_OUTPUT 0b00100000 //pin 13
+
+//Colour Frequency output`
+int frequency = 0;
 
 
 /*
@@ -796,6 +799,65 @@ void waitForHello()
 	} // !exit
 }
 
+void setupColorSensor() 
+{
+  //Set S0, S1, S2 AND S3 to be OUTPUT while output frequency is set to INPUT
+  DDRD |= ((COLOR_S0) | (COLOR_S1));
+  DDRB |= ((COLOR_S2) | (COLOR_S3));
+  DDRB &= ~(COLOR_OUTPUT);
+
+  //Setting frequency scaling to 20% by setting S0 to HIGH and S1 to LOW
+  PORTD |= COLOR_S0;
+  PORTD &= ~(COLOR_S1);
+
+  Serial.begin(9600);
+}
+
+void readColorValues()
+{
+  //Read red color values first
+
+  //Setting red filtered photodiodes to be read
+  PORTB &= ~((COLOR_S2) | (COLOR_S3));
+
+  //Reading output frequency
+  frequency = pulseIn(COLOR_OUTPUT, LOW);
+
+  //Printing value on serial monitor
+  Serial.print("R= "); //Printing name
+  Serial.print(frequency);
+  Serial.print(" ");
+  delay(100);
+
+  //Setting Green filtered photodiodes to be read
+  PORTB |= ((COLOR_S2) | (COLOR_S3));
+
+  //Reading output frequency
+  frequency = pulseIn(COLOR_OUTPUT, LOW);
+
+  //Printing value on serial monitor
+  Serial.print("G= "); //Printing name
+  Serial.print(frequency);
+  Serial.print(" ");
+  delay(100);
+
+  
+  //Setting BLUE filtered photodiodes to be read
+  PORTB &= ~(COLOR_S2);
+  PORTB |= (COLOR_S3);
+
+  //Reading output frequency
+  frequency = pulseIn(COLOR_OUTPUT, LOW);
+
+  //Printing value on serial monitor
+  Serial.print("B= "); //Printing name
+  Serial.print(frequency);
+  Serial.print(" ");
+  delay(100);
+  
+  
+}
+
 void setup() {
 	// put your setup code here, to run once:
 	alexDiagonal = sqrt((ALEX_LENGTH * ALEX_LENGTH) + (ALEX_BREADTH * ALEX_BREADTH));
@@ -806,6 +868,7 @@ void setup() {
 	startSerial();
 	setupMotors();
 	startMotors();
+  setupColorSensor();
 	enablePullups();
 	initializeState();
 	sei();
@@ -843,6 +906,9 @@ void loop() {
 
 
 	// put your main code here, to run repeatedly:
+
+  readColorValues();
+  
 	TPacket recvPacket; // This holds commands from the Pi
 
 	TResult result = readPacket(&recvPacket);
