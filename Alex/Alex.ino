@@ -684,9 +684,9 @@ void readColorValues()
   colorPacket.params[0] = frequency;
 
   //Printing value on serial monitor
-  Serial.print("R= ");
-  Serial.print(frequency);
-  Serial.print(" ");
+  //Serial.print("R= ");
+  //Serial.print(frequency);
+  //Serial.print(" ");
   delay(100);
 
   //Setting Green filtered photodiodes to be read
@@ -697,9 +697,9 @@ void readColorValues()
   colorPacket.params[1] = frequency;
 
   //Printing value on serial monitor
-  Serial.print("G= ");
-  Serial.print(frequency);
-  Serial.print(" ");
+  //Serial.print("G= ");
+  //Serial.print(frequency);
+  //Serial.print(" ");
   delay(100);
   
   //Setting BLUE filtered photodiodes to be read
@@ -711,12 +711,12 @@ void readColorValues()
   colorPacket.params[2] = frequency;
 
   //Printing value on serial monitor
-  Serial.print("B= ");
-  Serial.print(frequency);
-  Serial.print(" ");
+  //Serial.print("B= ");
+  //Serial.print(frequency);
+  //Serial.print(" ");
   delay(100);
   
-  Serial.println("");
+  //Serial.println("");
 
   sendResponse(&colorPacket);
 }
