@@ -7,7 +7,7 @@
 #include "serialize.h"
 
 /* TODO: Set PORT_NAME to the port name of your Arduino */
-#define PORT_NAME			"/dev/ttyACM1"
+#define PORT_NAME			"/dev/ttyACM0"
 /* END TODO */
 
 #define BAUD_RATE			B9600
@@ -281,11 +281,11 @@ void handleCommand(void *conn, const char *buffer)
 			uartSendPacket(&commandPacket);
 			break;
 		
-		case 's':
-		case 'S':
+		case 'x':
+		case 'X':
 			commandPacket.command = COMMAND_GET_COLOR;
 			uartSendPacket(&commandPacket);
-			break
+			break;
 
 		default:
 			printf("Bad command\n");
