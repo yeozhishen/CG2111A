@@ -817,7 +817,7 @@ void handleCommand(TPacket *command)
 			clearOneCounter(command->params[0]);
 			sendOK();
 			break;
-		case COMMAND_GET_COLOR:
+		case COMMAND_GET_COLOR;
 			readColorValues();
 			sendOK();
 
