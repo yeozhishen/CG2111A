@@ -655,6 +655,72 @@ void stop()
    
 }
 
+void setupColorSensor() 
+{
+  //Set S0, S1, S2 AND S3 to be OUTPUT while output frequency is set to INPUT
+  DDRD |= ((COLOR_S0) | (COLOR_S1));
+  DDRB |= ((COLOR_S2) | (COLOR_S3));
+  DDRB &= ~(COLOR_OUTPUT);
+
+  //Setting frequency scaling to 20% by setting S0 to HIGH and S1 to LOW
+  PORTD |= COLOR_S0;
+  PORTD &= ~(COLOR_S1);
+}
+
+void readColorValues()
+{
+  //create packet to send
+  TPacket colorPacket;
+  colorPacket.packetType = PACKET_TYPE_RESPONSE;
+  colorPacket.command = RESP_COLOR;
+
+  //Read red color values first
+
+  //Setting red filtered photodiodes to be read
+  PORTB &= ~((COLOR_S2) | (COLOR_S3));
+
+  //Reading output frequency
+  frequency = pulseIn(13, LOW);
+  colorPacket.params[0] = frequency;
+
+  //Printing value on serial monitor
+  Serial.print("R= ");
+  Serial.print(frequency);
+  Serial.print(" ");
+  delay(100);
+
+  //Setting Green filtered photodiodes to be read
+  PORTB |= ((COLOR_S2) | (COLOR_S3));
+
+  //Reading output frequency
+  frequency = pulseIn(13, LOW);
+  colorPacket.params[1] = frequency;
+
+  //Printing value on serial monitor
+  Serial.print("G= ");
+  Serial.print(frequency);
+  Serial.print(" ");
+  delay(100);
+  
+  //Setting BLUE filtered photodiodes to be read
+  PORTB &= ~(COLOR_S2);
+  PORTB |= (COLOR_S3);
+
+  //Reading output frequency
+  frequency = pulseIn(13, LOW);
+  colorPacket.params[2] = frequency;
+
+  //Printing value on serial monitor
+  Serial.print("B= ");
+  Serial.print(frequency);
+  Serial.print(" ");
+  delay(100);
+  
+  Serial.println("");
+
+  sendResponse(&colorPacket);
+}
+
 /*
  * Alex's setup and run codes
  * 
@@ -751,6 +817,9 @@ void handleCommand(TPacket *command)
 			clearOneCounter(command->params[0]);
 			sendOK();
 			break;
+		case COMMAND_GET_COLOR:
+			readColorValues();
+			sendOK();
 
 			/*
 			 * Implement code for other commands here.
@@ -799,61 +868,6 @@ void waitForHello()
 	} // !exit
 }
 
-void setupColorSensor() 
-{
-  //Set S0, S1, S2 AND S3 to be OUTPUT while output frequency is set to INPUT
-  DDRD |= ((COLOR_S0) | (COLOR_S1));
-  DDRB |= ((COLOR_S2) | (COLOR_S3));
-  DDRB &= ~(COLOR_OUTPUT);
-
-  //Setting frequency scaling to 20% by setting S0 to HIGH and S1 to LOW
-  PORTD |= COLOR_S0;
-  PORTD &= ~(COLOR_S1);
-}
-
-void readColorValues()
-{
-  //Read red color values first
-
-  //Setting red filtered photodiodes to be read
-  PORTB &= ~((COLOR_S2) | (COLOR_S3));
-
-  //Reading output frequency
-  frequency = pulseIn(13, LOW);
-
-  //Printing value on serial monitor
-  Serial.print("R= ");
-  Serial.print(frequency);
-  Serial.print(" ");
-  delay(100);
-
-  //Setting Green filtered photodiodes to be read
-  PORTB |= ((COLOR_S2) | (COLOR_S3));
-
-  //Reading output frequency
-  frequency = pulseIn(13, LOW);
-
-  //Printing value on serial monitor
-  Serial.print("G= ");
-  Serial.print(frequency);
-  Serial.print(" ");
-  delay(100);
-  
-  //Setting BLUE filtered photodiodes to be read
-  PORTB &= ~(COLOR_S2);
-  PORTB |= (COLOR_S3);
-
-  //Reading output frequency
-  frequency = pulseIn(13, LOW);
-
-  //Printing value on serial monitor
-  Serial.print("B= ");
-  Serial.print(frequency);
-  Serial.print(" ");
-  delay(100);
-  
-  Serial.println("");
-}
 
 void setup() {
 	// put your setup code here, to run once:
@@ -904,7 +918,7 @@ void loop() {
 
 	// put your main code here, to run repeatedly:
 
-  readColorValues();
+  	//readColorValues();
   
 	TPacket recvPacket; // This holds commands from the Pi
 

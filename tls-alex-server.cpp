@@ -64,6 +64,15 @@ void handleMessage(TPacket *packet)
 	sendNetworkData(data, sizeof(data));
 }
 
+void handleColor(TPacket *packet)
+{
+	char data[65];
+	printf("UART COLOR PACKET\n");
+	data[0] = NET_COLOR_PACKET;
+	memcpy(&data[1], packet->params, sizeof(packet->params));
+	sendNetworkData(data, sizeof(data));
+}
+
 void handleStatus(TPacket *packet)
 {
 	char data[65];
@@ -89,6 +98,10 @@ void handleResponse(TPacket *packet)
 		case RESP_STATUS:
 			handleStatus(packet);
 		break;
+
+		case RESP_COLOR:
+			handleColor(packet);
+			break;
 
 		default:
 		printf("Boo\n");
@@ -267,6 +280,12 @@ void handleCommand(void *conn, const char *buffer)
 			commandPacket.command = COMMAND_GET_STATS;
 			uartSendPacket(&commandPacket);
 			break;
+		
+		case 's':
+		case 'S':
+			commandPacket.command = COMMAND_GET_COLOR;
+			uartSendPacket(&commandPacket);
+			break
 
 		default:
 			printf("Bad command\n");
