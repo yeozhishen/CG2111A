@@ -43,10 +43,10 @@ float alexCirc = 0;
 #define LR                  6   // Left reverse pin
 #define RF                  10  // Right forward pin
 #define RR                  11  // Right reverse pin
-#define LEFT_FORWARD_REGISTER OC0A
-#define LEFT_REVERSE_REGISTER OC0B
-#define RIGHT_FORWARD_REGISTER OC2A
-#define RIGHT_REVERSE_REGISTER OC1B
+#define LEFT_FORWARD_REGISTER OC0B
+#define LEFT_REVERSE_REGISTER OC0A
+#define RIGHT_FORWARD_REGISTER OC1B
+#define RIGHT_REVERSE_REGISTER OC2A
 //color sensor setup definitions
 //port D
 #define COLOR_S0 0b00010000 //pin4
