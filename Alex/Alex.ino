@@ -817,7 +817,7 @@ void handleCommand(TPacket *command)
 			break;
 		case COMMAND_GET_COLOR:
 			readColorValues();
-			sendOK();
+			break;
 
 			/*
 			 * Implement code for other commands here.
