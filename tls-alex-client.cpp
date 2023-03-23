@@ -65,8 +65,8 @@ void handleColor(const char *buffer)
 	memcpy(data, &buffer[1], sizeof(data));
 	printf("\n ---------------- ALEX COLOR REPORT ----------------------- \n\n");
 	printf("R:\t\t%d\n",data[0]);
-	printf("R:\t\t%d\n",data[1]);
-	printf("R:\t\t%d\n",data[2]);
+	printf("G:\t\t%d\n",data[1]);
+	printf("B:\t\t%d\n",data[2]);
 	printf("\n---------------------------------------\n\n");
 }
 
