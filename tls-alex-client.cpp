@@ -67,6 +67,13 @@ void handleColor(const char *buffer)
 	printf("R:\t\t%d\n",data[0]);
 	printf("G:\t\t%d\n",data[1]);
 	printf("B:\t\t%d\n",data[2]);
+	if(data[3] = 1)
+	{
+		printf("DETECTED COLOR IS: RED\n");
+	}else if(data[3] = 0)
+	{
+		printf("DETECTED COLOR IS: GREEN\n");
+	}
 	printf("\n---------------------------------------\n\n");
 }
 
