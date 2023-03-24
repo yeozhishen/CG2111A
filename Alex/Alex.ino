@@ -418,9 +418,13 @@ void startMotors()
 {
  DDRD |= 0b01100000;
  DDRB |= 0b00001100;
- //TCCR0A |= 0b01010000;
- //TCCR1A |= 0b00010000;
- //TCCR2A |= 0b01000000;
+ TCCR0A |= 0b10100000;
+ TCCR1A |= 0b00100000;
+ TCCR2A |= 0b10000000;
+ LEFT_FORWARD_REGISTER = 0;
+ RIGHT_FORWARD_REGISTER = 0;
+ LEFT_REVERSE_REGISTER = 0;
+ RIGHT_REVERSE_REGISTER = 0;
 }
 
 // Convert percentages to PWM values
@@ -447,8 +451,6 @@ void forward(float dist, float speed)
   //baremetal wpm setting
   	LEFT_FORWARD_REGISTER = val;
 	RIGHT_FORWARD_REGISTER = val;
-	LEFT_REVERSE_REGISTER = val;
-	RIGHT_REVERSE_REGISTER = val;
 	if (dist > 0)
 	{
 		deltaDist = dist;
@@ -466,9 +468,9 @@ void forward(float dist, float speed)
 	// RF = Right forward pin, RR = Right reverse pin
 	// This will be replaced later with bare-metal code.
   // turn on bare metal pwm
-    TCCR0A |= 0b00100000;
-    TCCR2A |= 0b00000000;
-    TCCR1A |= 0b00100000;
+    //TCCR0A |= 0b00100000;
+    //TCCR2A |= 0b00000000;
+    //TCCR1A |= 0b00100000;
    
 	//analogWrite(LF, val);
 	//analogWrite(RF, val);
@@ -487,8 +489,6 @@ void reverse(float dist, float speed)
 	dir = BACKWARD;
 	int val = pwmVal(speed);
   //baremetal wpm setting
- 	LEFT_FORWARD_REGISTER = val;
-	RIGHT_FORWARD_REGISTER = val;
 	LEFT_REVERSE_REGISTER = val;
 	RIGHT_REVERSE_REGISTER = val;
 	if (dist > 0)
@@ -504,9 +504,9 @@ void reverse(float dist, float speed)
 	// reverse indefinitely. We will fix this
 	// in Week 9.
 // turn on bare metal pwm
-    TCCR0A |= 0b10000000;
-    TCCR2A |= 0b10000000;
-    TCCR1A |= 0b00000000;
+    //TCCR0A |= 0b10000000;
+    //TCCR2A |= 0b10000000;
+    //TCCR1A |= 0b00000000;
    
 	// LF = Left forward pin, LR = Left reverse pin
 	// RF = Right forward pin, RR = Right reverse pin
@@ -571,19 +571,17 @@ void left(float ang, float speed)
 	dir = LEFT;
 	int val = pwmVal(speed);
     //baremetal wpm setting
-  	LEFT_FORWARD_REGISTER = val;
 	RIGHT_FORWARD_REGISTER = val;
 	LEFT_REVERSE_REGISTER = val;
-	RIGHT_REVERSE_REGISTER = val;
 
 	// For now we will ignore ang. We will fix this in Week 9.
 	// We will also replace this code with bare-metal later.
 	// To turn left we reverse the left wheel and move
 	// the right wheel forward.
  // turn on bare metal pwm
-    TCCR0A |= 0b10000000;
-    TCCR2A |= 0b00000000;
-    TCCR1A |= 0b00100000;
+    //TCCR0A |= 0b10000000;
+    //TCCR2A |= 0b00000000;
+    //TCCR1A |= 0b00100000;
    
 
 	//analogWrite(LR, val);
@@ -603,8 +601,6 @@ void right(float ang, float speed)
 	int val = pwmVal(speed);
       //baremetal wpm setting
  	LEFT_FORWARD_REGISTER = val;
-	RIGHT_FORWARD_REGISTER = val;
-	LEFT_REVERSE_REGISTER = val;
 	RIGHT_REVERSE_REGISTER = val;
 	if(ang == 0)
 	{
@@ -624,9 +620,9 @@ void right(float ang, float speed)
 	// To turn right we reverse the right wheel and move
 	// the left wheel forward.
    // turn on bare metal pwm
-    TCCR0A |= 0b00100000;
-    TCCR2A |= 0b10000000;
-    TCCR1A |= 0b00000000;
+    //TCCR0A |= 0b00100000;
+    //TCCR2A |= 0b10000000;
+    //TCCR1A |= 0b00000000;
    
 	//analogWrite(RR, val);
 	//analogWrite(LF, val);
@@ -647,9 +643,9 @@ void stop()
 	//analogWrite(RF, 0);
 	//analogWrite(RR, 0);
  // turn on bare metal pwm
-    TCCR0A &= ~(0b11110000);
-    TCCR2A &= ~(0b11110000);
-    TCCR1A &= ~(0b11110000);
+    //TCCR0A &= ~(0b11110000);
+    //TCCR2A &= ~(0b11110000);
+    //TCCR1A &= ~(0b11110000);
    
 }
 
