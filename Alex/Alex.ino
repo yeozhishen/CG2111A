@@ -100,8 +100,8 @@ unsigned long rightTargetTicks;
 //serialisation stuff
 #define BUFFER_LEN 512
 //buffers for uart
-TBuffer _recvBuffer;
-TBuffer _xmitBuffer;
+volatile TBuffer _recvBuffer;
+volatile TBuffer _xmitBuffer;
 
 /*
  * 
@@ -406,7 +406,7 @@ int readSerial(char *buffer)
 
 	int count=0;
 	
-	TBufferResult result;
+	/*TBufferResult result;
 	do
 	{
 		result = readBuffer(&_recvBuffer, (unsigned char *)&buffer[count]);
@@ -414,9 +414,13 @@ int readSerial(char *buffer)
 		{
 			count++;
 		}
-	}while(result == BUFFER_OK);
+	}while(result == BUFFER_OK);*/
 	//while(Serial.available())
 	//	buffer[count++] = Serial.read();
+	for(count = 0; dataAvailable(&_recvBuffer); count +=1)
+	{
+		readBuffer(&_recvBuffer, (unsigned char*)&buffer[count]);
+	}
 
 	return count;
 
@@ -428,13 +432,17 @@ int readSerial(char *buffer)
 void writeSerial(const char *buffer, int len)
 {
 	//Serial.write(buffer, len);
-	TBufferResult result = BUFFER_OK;
+	/*TBufferResult result = BUFFER_OK;
 	for (int pos = 0; pos < len && result == BUFFER_OK; pos++)
 	{
 		result = writeBuffer(&_xmitBuffer, buffer[pos]);
 	}
 	//load first bit of data to send out
-	UDR0 = buffer[0];
+	UDR0 = buffer[0];*/
+	for (int i = 0; i < len; i++)
+	{
+		writeBuffer(&_xmitBuffer, buffer[i]);
+	}
 	//enable udre interrupt
 	UCSR0B |= 0b00100000;
 }
