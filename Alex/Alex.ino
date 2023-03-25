@@ -775,8 +775,6 @@ void readColorValues()
   delay(100);
   
   //Serial.println("");
-
-  sendResponse(&colorPacket);
   //determine if color detected is red or green: 1 for red, 0 for green
   if (colorPacket.params[0] < colorPacket.params[1])
   {
@@ -785,6 +783,9 @@ void readColorValues()
   {
   	colorPacket.params[3] = 0;
   }
+
+  sendResponse(&colorPacket);
+  
 }
 
 /*
