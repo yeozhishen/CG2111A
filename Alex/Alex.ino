@@ -1,8 +1,10 @@
+#include "buffer.h"
 #include <serialize.h>
 #include <stdarg.h>
 #include "packet.h"
 #include "constants.h"
 #include <math.h>
+
 
 typedef enum
 {
@@ -95,6 +97,11 @@ unsigned long rightDeltaTicks;
 unsigned long leftTargetTicks;
 unsigned long rightTargetTicks;
 
+//serialisation stuff
+#define BUFFER_LEN 512
+//buffers for uart
+TBuffer _recvBuffer;
+TBuffer _xmitBuffer;
 
 /*
  * 
@@ -335,10 +342,46 @@ ISR(INT1_vect)
 // Set up the serial connection. For now we are using 
 // Arduino Wiring, you will replace this later
 // with bare-metal code.
+
+ISR(USART_RX_vect)
+{
+	unsigned char data = UDR0;
+	//note that it will fail silently if duffer is full
+	writeBuffer(&_recvBuffer, data);
+}
+
+ISR(USART_UDRE_vect)
+{
+	unsigned char data;
+	TBufferResult result;
+  result = readBuffer(&_xmitBuffer, &data);
+	if(result == BUFFER_OK)
+	{
+		UDR0 = data;
+	}else if(result == BUFFER_EMPTY)
+	{
+		//disable udre interrupt after done transmitting buffer
+		UCSR0B &= 0b11011111;
+	}
+}
+
 void setupSerial()
 {
 	// To replace later with bare-metal.
-	Serial.begin(9600);
+	//Serial.begin(9600);
+	
+	//set baud rate to 9600
+  initBuffer(&_recvBuffer, BUFFER_LEN);
+  initBuffer(&_xmitBuffer, BUFFER_LEN);
+	UBRR0L = 103;
+	UBRR0H = 0;
+
+	//asynchronous uart, no parity, 1 stop bit, 8 bit data size per packet
+	UCSR0C = 0b00000110;
+
+	//0 the ucsr0a register first
+	UCSR0A = 0;
+
 }
 
 // Start the serial connection. For now we are using
@@ -349,6 +392,8 @@ void startSerial()
 {
 	// Empty for now. To be replaced with bare-metal code
 	// later on.
+	//enable interrupts for uarts and enabling transmitters and receivers
+	UCSR0B = 0b10111000;
 
 }
 
@@ -360,11 +405,21 @@ int readSerial(char *buffer)
 {
 
 	int count=0;
-
-	while(Serial.available())
-		buffer[count++] = Serial.read();
+	
+	TBufferResult result;
+	do
+	{
+		result = readBuffer(&_recvBuffer, (unsigned char *)&buffer[count]);
+		if(result == BUFFER_OK)
+		{
+			count++;
+		}
+	}while(result == BUFFER_OK);
+	//while(Serial.available())
+	//	buffer[count++] = Serial.read();
 
 	return count;
+
 }
 
 // Write to the serial port. Replaced later with
@@ -372,7 +427,16 @@ int readSerial(char *buffer)
 
 void writeSerial(const char *buffer, int len)
 {
-	Serial.write(buffer, len);
+	//Serial.write(buffer, len);
+	TBufferResult result = BUFFER_OK;
+	for (int pos = 0; pos < len && result == BUFFER_OK; pos++)
+	{
+		result = writeBuffer(&_xmitBuffer, buffer[pos]);
+	}
+	//load first bit of data to send out
+	UDR0 = buffer[0];
+	//enable udre interrupt
+	UCSR0B |= 0b00100000;
 }
 
 /*
