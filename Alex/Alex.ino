@@ -354,7 +354,7 @@ ISR(USART_UDRE_vect)
 {
 	unsigned char data;
 	TBufferResult result;
-  result = readBuffer(&_xmitBuffer, &data);
+  	result = readBuffer(&_xmitBuffer, &data);
 	if(result == BUFFER_OK)
 	{
 		UDR0 = data;
@@ -417,9 +417,10 @@ int readSerial(char *buffer)
 	}while(result == BUFFER_OK);*/
 	//while(Serial.available())
 	//	buffer[count++] = Serial.read();
-	for(count = 0; dataAvailable(&_recvBuffer); count +=1)
+	TbufferResult result = BUFFER_OK;
+	for(count = 0; dataAvailable(&_recvBuffer) && result == BUFFER_OK; count +=1)
 	{
-		readBuffer(&_recvBuffer, (unsigned char*)&buffer[count]);
+		result = readBuffer(&_recvBuffer, (unsigned char*)&buffer[count]);
 	}
 
 	return count;
@@ -439,10 +440,12 @@ void writeSerial(const char *buffer, int len)
 	}
 	//load first bit of data to send out
 	UDR0 = buffer[0];*/
-	for (int i = 0; i < len; i++)
+	TBufferResult result = BUFFER_OK;
+	for (int pos = 1; pos < len && reesult == BUFFER_OK; pos++)
 	{
-		writeBuffer(&_xmitBuffer, buffer[i]);
+		result = writeBuffer(&_xmitBuffer, buffer[pos]);
 	}
+	UDR0 = buffer[0];
 	//enable udre interrupt
 	UCSR0B |= 0b00100000;
 }
