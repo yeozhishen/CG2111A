@@ -98,7 +98,7 @@ unsigned long leftTargetTicks;
 unsigned long rightTargetTicks;
 
 //serialisation stuff
-#define BUFFER_LEN 512
+#define BUFFER_LEN 256
 //buffers for uart
 volatile TBuffer _recvBuffer;
 volatile TBuffer _xmitBuffer;
@@ -417,7 +417,7 @@ int readSerial(char *buffer)
 	}while(result == BUFFER_OK);*/
 	//while(Serial.available())
 	//	buffer[count++] = Serial.read();
-	TbufferResult result = BUFFER_OK;
+	TBufferResult result = BUFFER_OK;
 	for(count = 0; dataAvailable(&_recvBuffer) && result == BUFFER_OK; count +=1)
 	{
 		result = readBuffer(&_recvBuffer, (unsigned char*)&buffer[count]);
@@ -441,7 +441,7 @@ void writeSerial(const char *buffer, int len)
 	//load first bit of data to send out
 	UDR0 = buffer[0];*/
 	TBufferResult result = BUFFER_OK;
-	for (int pos = 1; pos < len && reesult == BUFFER_OK; pos++)
+	for (int pos = 1; pos < len && result == BUFFER_OK; pos++)
 	{
 		result = writeBuffer(&_xmitBuffer, buffer[pos]);
 	}
