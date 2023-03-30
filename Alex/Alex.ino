@@ -58,6 +58,15 @@ float alexCirc = 0;
 #define COLOR_S3 0b00010000 //pin 12
 #define COLOR_OUTPUT 0b00100000 //pin 13
 
+//Ultrasonic sensor pins
+#define TRIG_PIN          0b00000001
+#define ECHO_PIN          0b00000010
+#define ECHO_ORIG         9
+
+//Ultrasonic sensor variables
+long duration;
+int distance;
+
 //Colour Frequency output`
 int frequency = 0;
 
@@ -100,8 +109,8 @@ unsigned long rightTargetTicks;
 //serialisation stuff
 #define BUFFER_LEN 256
 //buffers for uart
-volatile TBuffer _recvBuffer;
-volatile TBuffer _xmitBuffer;
+TBuffer _recvBuffer;
+TBuffer _xmitBuffer;
 
 /*
  * 
@@ -799,6 +808,45 @@ void readColorValues()
   
 }
 
+void setupUltrasonic()
+{
+  DDRC |= TRIG_PIN;
+  DDRB &= ~(ECHO_PIN);
+  //Serial.begin(9600);
+}
+
+
+void getUltrasonic()
+{
+  TPacket ultrasonicPacket;
+  ultrasonicPacket.packetType = PACKET_TYPE_RESPONSE;
+  ultrasonicPacket.command = RESP_ULTRASONIC;
+  
+  PORTC &= ~(TRIG_PIN);
+  
+  //digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+
+  //Sets the TRIG_PIN on HIGH state for 10 micro seconds
+  PORTC |= TRIG_PIN;
+  //digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  PORTC &= ~(TRIG_PIN);
+  //digitalWrite(TRIG_PIN, LOW);
+
+  //Reads the ECHO_PIN, returns the sound wave travel time in microseconds
+  duration = pulseIn(ECHO_ORIG, HIGH);
+
+  //Calculating the distance
+  distance = duration * 0.034 / 2;
+  ultrasonicPacket.params[0] = distance;
+  //dbprintf("%d", distance);
+  
+  sendResponse(&ultrasonicPacket);
+  //Serial.print("Distance: ");
+  //Serial.println(distance);
+}
+
 /*
  * Alex's setup and run codes
  * 
@@ -898,6 +946,9 @@ void handleCommand(TPacket *command)
 		case COMMAND_GET_COLOR:
 			readColorValues();
 			break;
+    case COMMAND_GET_ULTRASONIC:
+      getUltrasonic();
+      break;
 
 			/*
 			 * Implement code for other commands here.
@@ -958,6 +1009,7 @@ void setup() {
 	setupMotors();
 	startMotors();
   setupColorSensor();
+  setupUltrasonic();
 	enablePullups();
 	initializeState();
 	sei();
@@ -996,7 +1048,7 @@ void loop() {
 
 	// put your main code here, to run repeatedly:
 
-  	//readColorValues();
+  	//getUltrasonic();
   
 	TPacket recvPacket; // This holds commands from the Pi
 
