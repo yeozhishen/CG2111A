@@ -7,7 +7,7 @@
 #include "serialize.h"
 
 /* TODO: Set PORT_NAME to the port name of your Arduino */
-#define PORT_NAME			"/dev/ttyACM0"
+#define PORT_NAME			"/dev/ttyACM1"
 /* END TODO */
 
 #define BAUD_RATE			B9600
@@ -73,6 +73,15 @@ void handleColor(TPacket *packet)
 	sendNetworkData(data, sizeof(data));
 }
 
+void handleUltrasonic (TPacket *packet)
+{
+	char data[65];
+	printf("UART ULTRASONIC PACKET\n");
+	data[0] = NET_ULTRASONIC_PACKET;
+	memcpy(&data[1], packet->params, sizeof(packet->params));
+	sendNetworkData(data, sizeof(data));
+}
+
 void handleStatus(TPacket *packet)
 {
 	char data[65];
@@ -101,6 +110,9 @@ void handleResponse(TPacket *packet)
 
 		case RESP_COLOR:
 			handleColor(packet);
+			break;
+		case RESP_ULTRASONIC:
+			handleUltrasonic(packet);
 			break;
 
 		default:
@@ -286,7 +298,12 @@ void handleCommand(void *conn, const char *buffer)
 			commandPacket.command = COMMAND_GET_COLOR;
 			uartSendPacket(&commandPacket);
 			break;
-
+		case 'u':
+		case 'U':
+			commandPacket.command = COMMAND_GET_ULTRASONIC;
+			uartSendPacket(&commandPacket);
+			break;
+			
 		default:
 			printf("Bad command\n");
 
