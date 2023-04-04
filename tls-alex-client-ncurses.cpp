@@ -67,14 +67,26 @@ void handleColor(const char *buffer)
 	printw("R:\t\t%d\n",data[0]);
 	printw("G:\t\t%d\n",data[1]);
 	printw("B:\t\t%d\n",data[2]);
-	if(data[3] = 1)
+	if(data[3] == 1)
 	{
 		printw("DETECTED COLOR IS: RED\n");
-	}else if(data[3] = 0)
+	}else if(data[3] == 0)
 	{
 		printw("DETECTED COLOR IS: GREEN\n");
 	}
 	printw("\n---------------------------------------\n\n");
+}
+
+void handleUltrasonic (const char *buffer) 
+{
+	
+	int32_t data[16];
+
+	memcpy(data, &buffer[1], sizeof(data));
+	printf("\n ---------------- ALEX ULTRASONIC DISTANCE  REPORT ----------------------- \n\n");
+	printf("Distance:\t\t%d\n",data[0]);
+	printf("\n---------------------------------------\n\n");
+
 }
 
 void handleMessage(const char *buffer)
@@ -114,6 +126,10 @@ void handleNetwork(const char *buffer, int len)
 
 		case NET_COLOR_PACKET:
 		handleColor(buffer);
+		break;
+		
+		case NET_ULTRASONIC_PACKET:
+		handleUltrasonic(buffer);
 		break;
 	}
 }
@@ -257,7 +273,7 @@ void *writerThread(void *conn)
 				break;
 			case KEY_LEFT:
 				params[0] = 10;
-				params[1] = 65;
+				params[1] = 80;
 				memcpy(&buffer[2], params, sizeof(params));
 				buffer[1] = 'l';
 				sendData(conn, buffer, sizeof(buffer));
@@ -265,11 +281,19 @@ void *writerThread(void *conn)
 				break;
 			case KEY_RIGHT:
 				params[0] = 10;
-				params[1] = 65;
+				params[1] = 80;
 				memcpy(&buffer[2], params, sizeof(params));
 				buffer[1] = 'r';
 				sendData(conn, buffer, sizeof(buffer));
 				printw("right arrow key has been pressed\n");
+				break;
+			case 'u':
+			case 'U':
+				params[0] = 0;
+				params[1] = 0;
+				memcpy(&buffer[2],params,sizeof(params));
+				buffer[1] = ch;
+				sendData(conn, buffer, sizeof(buffer));
 				break;
 			case 'o':
 			case 'O':
