@@ -83,9 +83,11 @@ void handleUltrasonic (const char *buffer)
 	int32_t data[16];
 
 	memcpy(data, &buffer[1], sizeof(data));
-	printf("\n ---------------- ALEX ULTRASONIC DISTANCE  REPORT ----------------------- \n\n");
-	printf("Distance:\t\t%d\n",data[0]);
-	printf("\n---------------------------------------\n\n");
+	printw("\n ---------------- ALEX ULTRASONIC DISTANCE  REPORT ----------------------- \n\n");
+	printw("FRONT DISTANCE:\t\t%d\n",data[0]);
+	printw("LEFT DISTANCE:\t\t%d\n",data[1]);
+	printw("RIGHT DISTANCE:\t\t%d\n",data[2]);
+	printw("\n---------------------------------------\n\n");
 
 }
 
