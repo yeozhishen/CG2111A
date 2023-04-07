@@ -214,7 +214,7 @@ void *writerThread(void *conn)
 			move(0,0);
 		}
 		int ch;
-		printw("Command (f=forward, b=reverse, l=turn left, r=turn right, s=stop, c=clear stats, g=get stats, x=get color, q=exit,o=clear screen, up/back arrow key to make robot move 5cm at 70%% power,left/right arrow keys to make robot move 10 degrees at 65%% power, )\n");
+		printw("Command (f=forward, b=reverse, l=turn left, r=turn right, s=stop, c=clear stats, g=get stats, x=get color, q=exit,o=clear screen, up/back arrow key to make robot move 5cm at 70%% power,left/right arrow keys to make robot move 10 degrees at 65%% power, p=rick roll)\n");
 		//scanf("%c", &ch);
 
 		// Purge extraneous characters from input stream
