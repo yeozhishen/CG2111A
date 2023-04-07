@@ -258,16 +258,16 @@ void *writerThread(void *conn)
 				sendData(conn, buffer, sizeof(buffer));
 				break;
 			case KEY_UP:
-				params[0] = 5;
-				params[1] = 70;
+				params[0] = 2;
+				params[1] = 100;
 				memcpy(&buffer[2], params, sizeof(params));
 				buffer[1] = 'f';
 				sendData(conn, buffer, sizeof(buffer));
 				printw("up arrow key has been pressed\n");
 				break;
 			case KEY_DOWN:
-				params[0] = 5;
-				params[1] = 70;
+				params[0] = 2;
+				params[1] = 100;
 				memcpy(&buffer[2], params, sizeof(params));
 				buffer[1] = 'b';
 				sendData(conn, buffer, sizeof(buffer));
@@ -275,7 +275,7 @@ void *writerThread(void *conn)
 				break;
 			case KEY_LEFT:
 				params[0] = 10;
-				params[1] = 80;
+				params[1] = 90;
 				memcpy(&buffer[2], params, sizeof(params));
 				buffer[1] = 'l';
 				sendData(conn, buffer, sizeof(buffer));
@@ -283,7 +283,7 @@ void *writerThread(void *conn)
 				break;
 			case KEY_RIGHT:
 				params[0] = 10;
-				params[1] = 80;
+				params[1] = 90;
 				memcpy(&buffer[2], params, sizeof(params));
 				buffer[1] = 'r';
 				sendData(conn, buffer, sizeof(buffer));
