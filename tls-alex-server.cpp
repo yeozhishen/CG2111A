@@ -303,6 +303,12 @@ void handleCommand(void *conn, const char *buffer)
 			commandPacket.command = COMMAND_GET_ULTRASONIC;
 			uartSendPacket(&commandPacket);
 			break;
+		case 'p':
+		case 'P':
+			commandPacket.command = COMMAND_RICK_ROLL;
+			uartSendPacket(&commandPacket);
+			break;
+			
 			
 		default:
 			printf("Bad command\n");

@@ -8,6 +8,8 @@
 // Packet types, error codes, etc.
 #include "constants.h"
 
+#include <string.h>
+
 // Tells us that the network is running.
 static volatile int networkActive=0;
 
@@ -79,7 +81,7 @@ void handleColor(const char *buffer)
 
 void handleUltrasonic (const char *buffer) 
 {
-	
+
 	int32_t data[16];
 
 	memcpy(data, &buffer[1], sizeof(data));
@@ -111,28 +113,28 @@ void handleNetwork(const char *buffer, int len)
 	switch(type)
 	{
 		case NET_ERROR_PACKET:
-		handleError(buffer);
-		break;
+			handleError(buffer);
+			break;
 
 		case NET_STATUS_PACKET:
-		handleStatus(buffer);
-		break;
+			handleStatus(buffer);
+			break;
 
 		case NET_MESSAGE_PACKET:
-		handleMessage(buffer);
-		break;
+			handleMessage(buffer);
+			break;
 
 		case NET_COMMAND_PACKET:
-		handleCommand(buffer);
-		break;
+			handleCommand(buffer);
+			break;
 
 		case NET_COLOR_PACKET:
-		handleColor(buffer);
-		break;
-		
+			handleColor(buffer);
+			break;
+
 		case NET_ULTRASONIC_PACKET:
-		handleUltrasonic(buffer);
-		break;
+			handleUltrasonic(buffer);
+			break;
 	}
 }
 
@@ -159,7 +161,7 @@ void *readerThread(void *conn)
 	{
 		/* TODO: Insert SSL read here into buffer */
 		len = sslRead(conn, buffer, sizeof(buffer));
-        printw("read %d bytes from server.\n", len);
+		printw("read %d bytes from server.\n", len);
 		/* END TODO */
 
 		networkActive = (len > 0);
@@ -169,11 +171,11 @@ void *readerThread(void *conn)
 	}
 
 	printw("Exiting network listener thread\n");
-    
-    /* TODO: Stop the client loop and call EXIT_THREAD */
+
+	/* TODO: Stop the client loop and call EXIT_THREAD */
 	stopClient();
 	EXIT_THREAD(conn);
-    /* END TODO */
+	/* END TODO */
 }
 
 //may not be needed if using ncurses
@@ -212,7 +214,7 @@ void *writerThread(void *conn)
 			move(0,0);
 		}
 		int ch;
-		printf("Command (f=forward, b=reverse, l=turn left, r=turn right, s=stop, c=clear stats, g=get stats, x=get color, q=exit,o=clear screen, up/back arrow key to make robot move 5cm at 70%% power,left/right arrow keys to make robot move 10 degrees at 65%% power, )\n");
+		printw("Command (f=forward, b=reverse, l=turn left, r=turn right, s=stop, c=clear stats, g=get stats, x=get color, q=exit,o=clear screen, up/back arrow key to make robot move 5cm at 70%% power,left/right arrow keys to make robot move 10 degrees at 65%% power, )\n");
 		//scanf("%c", &ch);
 
 		// Purge extraneous characters from input stream
@@ -232,23 +234,23 @@ void *writerThread(void *conn)
 			case 'L':
 			case 'r':
 			case 'R':
-						getParams(params);
-						buffer[1] = (char)ch;
-						memcpy(&buffer[2], params, sizeof(params));
-						sendData(conn, buffer, sizeof(buffer));
-						break;
+				getParams(params);
+				buffer[1] = (char)ch;
+				memcpy(&buffer[2], params, sizeof(params));
+				sendData(conn, buffer, sizeof(buffer));
+				break;
 			case 's':
 			case 'S':
 			case 'c':
 			case 'C':
 			case 'g':
 			case 'G':
-					params[0]=0;
-					params[1]=0;
-					memcpy(&buffer[2], params, sizeof(params));
-					buffer[1] = (char)ch;
-					sendData(conn, buffer, sizeof(buffer));
-					break;
+				params[0]=0;
+				params[1]=0;
+				memcpy(&buffer[2], params, sizeof(params));
+				buffer[1] = (char)ch;
+				sendData(conn, buffer, sizeof(buffer));
+				break;
 			case 'x':
 			case 'X':
 				params[0] = 0;
@@ -297,6 +299,23 @@ void *writerThread(void *conn)
 				buffer[1] = ch;
 				sendData(conn, buffer, sizeof(buffer));
 				break;
+			case 'p':
+			case 'P':
+				{
+					printw("Enter the following code to rick roll your enemies - 'rickroll'\n");
+					char* input = new char[10];
+					getnstr(input, 10);
+
+					if(strcmp(input, "rickroll") == 0) {
+						params[0] = 0;
+						params[1]= 0;
+						memcpy(&buffer[2],params,sizeof(params));
+						buffer[1] = (char)ch;
+						sendData(conn, buffer, sizeof(buffer));
+					}
+					delete input;
+					break;
+				}
 			case 'o':
 			case 'O':
 				clear();
@@ -312,10 +331,10 @@ void *writerThread(void *conn)
 
 	printw("Exiting keyboard thread\n");
 	endwin();
-    /* TODO: Stop the client loop and call EXIT_THREAD */
+	/* TODO: Stop the client loop and call EXIT_THREAD */
 	stopClient();
 	EXIT_THREAD(conn);
-    /* END TODO */
+	/* END TODO */
 }
 
 /* TODO: #define filenames for the client private key, certificatea,
@@ -327,9 +346,9 @@ void *writerThread(void *conn)
 /* END TODO */
 void connectToServer(const char *serverName, int portNum)
 {
-    /* TODO: Create a new client */
+	/* TODO: Create a new client */
 	createClient(serverName, portNum, 1, CA_CERTIFICATE, SERVER_NAME_ON_CERT, 1, CLIENT_CERTIFICATE, CLIENT_PRIVATE_KEY, readerThread, writerThread);
-    /* END TODO */
+	/* END TODO */
 }
 
 int main(int ac, char **av)
@@ -340,12 +359,12 @@ int main(int ac, char **av)
 		exit(-1);
 	}
 
-    networkActive = 1;
-    connectToServer(av[1], atoi(av[2]));
+	networkActive = 1;
+	connectToServer(av[1], atoi(av[2]));
 
-    /* TODO: Add in while loop to prevent main from exiting while the
-    client loop is running */
-    while(client_is_running());
-    /* END TODO */
+	/* TODO: Add in while loop to prevent main from exiting while the
+	   client loop is running */
+	while(client_is_running());
+	/* END TODO */
 	printf("\nMAIN exiting\n\n");
 }
