@@ -1,13 +1,11 @@
+// library for keyboard contol
 #include <ncurses.h>
 // Routines to create a TLS client
 #include "make_tls_client.h"
-
 // Network packet types
 #include "netconstants.h"
-
 // Packet types, error codes, etc.
 #include "constants.h"
-
 #include <string.h>
 
 // Tells us that the network is running.
@@ -46,7 +44,6 @@ void handleStatus(const char *buffer)
 {
 	int32_t data[16];
 	memcpy(data, &buffer[1], sizeof(data));
-
 	printw("\n ------- ALEX STATUS REPORT ------- \n\n");
 	printw("Left Forward Ticks:\t\t%d\n", data[0]);
 	printw("Right Forward Ticks:\t\t%d\n", data[1]);
@@ -61,6 +58,7 @@ void handleStatus(const char *buffer)
 	printw("\n---------------------------------------\n\n");
 }
 
+//print out color value readings from Alex
 void handleColor(const char *buffer)
 {
 	int32_t data[16];
@@ -79,18 +77,16 @@ void handleColor(const char *buffer)
 	printw("\n---------------------------------------\n\n");
 }
 
+//print out ultrasonic readings from Alex
 void handleUltrasonic (const char *buffer) 
 {
-
 	int32_t data[16];
-
 	memcpy(data, &buffer[1], sizeof(data));
 	printw("\n ---------------- ALEX ULTRASONIC DISTANCE  REPORT ----------------------- \n\n");
 	printw("FRONT DISTANCE:\t\t%d\n",data[0]);
 	printw("LEFT DISTANCE:\t\t%d\n",data[1]);
 	printw("RIGHT DISTANCE:\t\t%d\n",data[2]);
 	printw("\n---------------------------------------\n\n");
-
 }
 
 void handleMessage(const char *buffer)
@@ -109,7 +105,6 @@ void handleNetwork(const char *buffer, int len)
 {
 	// The first byte is the packet type
 	int type = buffer[0];
-
 	switch(type)
 	{
 		case NET_ERROR_PACKET:
@@ -144,10 +139,8 @@ void sendData(void *conn, const char *buffer, int len)
 	printw("\nSENDING %d BYTES DATA\n\n", len);
 	if(networkActive)
 	{
-		/* TODO: Insert SSL write here to write buffer to network */
-
+		//SSL write here to write buffer to network
 		sslWrite(conn, buffer, len);
-		/* END TODO */	
 		networkActive = (c > 0);
 	}
 }
@@ -156,33 +149,26 @@ void *readerThread(void *conn)
 {
 	char buffer[128];
 	int len;
-
 	while(networkActive)
 	{
-		/* TODO: Insert SSL read here into buffer */
+		// SSL read here into buffer
 		len = sslRead(conn, buffer, sizeof(buffer));
 		printw("read %d bytes from server.\n", len);
-		/* END TODO */
-
 		networkActive = (len > 0);
-
 		if(networkActive)
 			handleNetwork(buffer, len);
 	}
 
 	printw("Exiting network listener thread\n");
-
-	/* TODO: Stop the client loop and call EXIT_THREAD */
+	//Stop the client loop and call EXIT_THREAD
 	stopClient();
 	EXIT_THREAD(conn);
-	/* END TODO */
 }
 
-//may not be needed if using ncurses
+//flush input buffer to prevent reading garbage
 void flushInput()
 {
 	char c;
-
 	while((c = getchar()) != '\n' && c != EOF);
 }
 
@@ -190,10 +176,9 @@ void getParams(int32_t *params)
 {
 	printw("\nEnter distance/angle in cm/degrees (e.g. 50) and power in %% (e.g. 75) separated by space.\n");
 	printw("E.g. 50 75 means go at 50 cm at 75%% power for forward/backward, or 50 degrees left or right turn at 75%%  power\n");
-	//flush input b4 scanning for input
+	//flush input before scanning for input
 	flushinp();
 	scanw("%d %d", &params[0], &params[1]);
-	//flushInput();
 }
 
 void *writerThread(void *conn)
@@ -215,14 +200,9 @@ void *writerThread(void *conn)
 		}
 		int ch;
 		printw("Command (f=forward, b=reverse, l=turn left, r=turn right, s=stop, c=clear stats, g=get stats, x=get color, q=exit,o=clear screen, up/back arrow key to make robot move 5cm at 70%% power,left/right arrow keys to make robot move 10 degrees at 65%% power, p=rick roll)\n");
-		//scanf("%c", &ch);
-
-		// Purge extraneous characters from input stream
-		//flushInput();
 		ch = getch();
 		char buffer[10];
 		int32_t params[2];
-
 		buffer[0] = NET_COMMAND_PACKET;
 		switch(ch)
 		{
@@ -301,21 +281,19 @@ void *writerThread(void *conn)
 				break;
 			case 'p':
 			case 'P':
+				printw("Enter the following code to rick roll your enemies - 'rickroll'\n");
+				char* input = new char[10];
+				getnstr(input, 10);
+				if(strcmp(input, "rickroll") == 0) 
 				{
-					printw("Enter the following code to rick roll your enemies - 'rickroll'\n");
-					char* input = new char[10];
-					getnstr(input, 10);
-
-					if(strcmp(input, "rickroll") == 0) {
-						params[0] = 0;
-						params[1]= 0;
-						memcpy(&buffer[2],params,sizeof(params));
-						buffer[1] = (char)ch;
-						sendData(conn, buffer, sizeof(buffer));
-					}
-					delete input;
-					break;
+					params[0] = 0;
+					params[1]= 0;
+					memcpy(&buffer[2],params,sizeof(params));
+					buffer[1] = (char)ch;
+					sendData(conn, buffer, sizeof(buffer));
 				}
+				delete input;
+				break;
 			case 'o':
 			case 'O':
 				clear();
@@ -331,24 +309,22 @@ void *writerThread(void *conn)
 
 	printw("Exiting keyboard thread\n");
 	endwin();
-	/* TODO: Stop the client loop and call EXIT_THREAD */
+	//Stop the client loop and call EXIT_THREAD
 	stopClient();
 	EXIT_THREAD(conn);
-	/* END TODO */
 }
 
-/* TODO: #define filenames for the client private key, certificatea,
-   CA filename, etc. that you need to create a client */
+//define filenames for the client private key, certificates,
+//   CA filename, etc. that you need to create a client
 #define CLIENT_PRIVATE_KEY "laptop.key"
 #define CLIENT_CERTIFICATE "laptop.crt"
 #define CA_CERTIFICATE "signing.pem"
 #define SERVER_NAME_ON_CERT "alex.epp.com"
-/* END TODO */
+
 void connectToServer(const char *serverName, int portNum)
 {
-	/* TODO: Create a new client */
+	// Create a new client
 	createClient(serverName, portNum, 1, CA_CERTIFICATE, SERVER_NAME_ON_CERT, 1, CLIENT_CERTIFICATE, CLIENT_PRIVATE_KEY, readerThread, writerThread);
-	/* END TODO */
 }
 
 int main(int ac, char **av)
@@ -358,13 +334,10 @@ int main(int ac, char **av)
 		fprintf(stderr, "\n\n%s <IP address> <Port Number>\n\n", av[0]);
 		exit(-1);
 	}
-
 	networkActive = 1;
 	connectToServer(av[1], atoi(av[2]));
-
-	/* TODO: Add in while loop to prevent main from exiting while the
-	   client loop is running */
+	// Add in while loop to prevent main from exiting while the
+	//   client loop is running 
 	while(client_is_running());
-	/* END TODO */
 	printf("\nMAIN exiting\n\n");
 }
