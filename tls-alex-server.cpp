@@ -6,43 +6,31 @@
 #include "serial.h"
 #include "serialize.h"
 
-/* TODO: Set PORT_NAME to the port name of your Arduino */
+//Set PORT_NAME to the port name of your Arduino
 #define PORT_NAME			"/dev/ttyACM0"
-/* END TODO */
-
 #define BAUD_RATE			B9600
-
 // TLS Port Number
 #define SERVER_PORT			5000
 
-/* TODO: #define constants for the  filenames for Alex's private key, certificate, CA certificate name,
+/* #define constants for the  filenames for Alex's private key, certificate, CA certificate name,
         and the Common Name for your laptop */
 #define ALEX_PRIVATE_KEY "alex.key"
 #define ALEX_CERTIFICATE "alex.crt"
 #define CA_CERTIFICATE "signing.pem"
 #define CLIENT_NAME "laptop.epp.com"
-/* END TODO */
-
 // Our network buffer consists of 1 byte of packet type, and 128 bytes of data
 #define BUF_LEN				129
-
 // This variable shows whether a network connection is active
 // We will also use this variable to prevent the server from serving
 // more than one connection, to keep connection management simple.
-
 static volatile int networkActive;
-
 // This variable is used by sendNetworkData to send back responses
 // to the TLS connection.  It is sent by handleNetworkData
-
 static void *tls_conn = NULL;
 
 /*
-
 	Alex Serial Routines to the Arduino
-
 	*/
-
 // Prototype for sendNetworkData
 void sendNetworkData(const char *, int);
 
@@ -103,23 +91,19 @@ void handleResponse(TPacket *packet)
 			resp[1] = RESP_OK;
 			sendNetworkData(resp, sizeof(resp));
 		break;
-
 		case RESP_STATUS:
 			handleStatus(packet);
 		break;
-
 		case RESP_COLOR:
 			handleColor(packet);
 			break;
 		case RESP_ULTRASONIC:
 			handleUltrasonic(packet);
 			break;
-
 		default:
 		printf("Boo\n");
 	}
 }
-
 
 void handleUARTPacket(TPacket *packet)
 {
@@ -148,7 +132,6 @@ void uartSendPacket(TPacket *packet)
 {
 	char buffer[PACKET_SIZE];
 	int len = serialize(buffer, packet, sizeof(TPacket));
-
 	serialWrite(buffer, len);
 }
 
@@ -159,11 +142,9 @@ void handleError(TResult error)
 		case PACKET_BAD:
 			printf("ERROR: Bad Magic Number\n");
 			break;
-
 		case PACKET_CHECKSUM_BAD:
 			printf("ERROR: Bad checksum\n");
 			break;
-
 		default:
 			printf("ERROR: UNKNOWN ERROR\n");
 	}
@@ -176,7 +157,6 @@ void *uartReceiveThread(void *p)
 	TPacket packet;
 	TResult result;
 	int counter=0;
-
 	while(1)
 	{
 		len = serialRead(buffer);
@@ -184,7 +164,6 @@ void *uartReceiveThread(void *p)
 		if(len > 0)
 		{
 			result = deserialize(buffer, len, &packet);
-
 			if(result == PACKET_OK)
 			{
 				counter=0;
@@ -201,31 +180,23 @@ void *uartReceiveThread(void *p)
 }
 
 /*
-
 	Alex Network Routines
-
 	*/
-
-
 void sendNetworkData(const char *data, int len)
 {
 	// Send only if network is active
 	if(networkActive)
 	{
-        // Use this to store the number of bytes actually written to the TLS connection.
-        int c;
-
+        	// Use this to store the number of bytes actually written to the TLS connection.
+        	int c;
 		printf("WRITING TO CLIENT\n");
- 
-        if(tls_conn != NULL) {
-            /* TODO: Implement SSL write here to write data to the network. Note that
-              handleNetworkData should already have set tls_conn to point to the TLS
-              connection we want to write to. */
-		c = sslWrite(tls_conn,data,len);
-            /* END TODO */
-
-        }
-
+        	if(tls_conn != NULL) 
+		{
+            		/* Implement SSL write here to write data to the network. Note that
+              		handleNetworkData should already have set tls_conn to point to the TLS
+              		connection we want to write to. */
+			c = sslWrite(tls_conn,data,len);
+        	}
 		// Network is still active if we can write more then 0 bytes.
 		networkActive = (c > 0);
 	}
@@ -236,18 +207,13 @@ void handleCommand(void *conn, const char *buffer)
 	// The first byte contains the command
 	char cmd = buffer[1];
 	uint32_t cmdParam[2];
-
 	// Copy over the parameters.
 	memcpy(cmdParam, &buffer[2], sizeof(cmdParam));
-
 	TPacket commandPacket;
-
 	commandPacket.packetType = PACKET_TYPE_COMMAND;
 	commandPacket.params[0] = cmdParam[0];
 	commandPacket.params[1] = cmdParam[1];
-
 	printf("COMMAND RECEIVED: %c %d %d\n", cmd, cmdParam[0], cmdParam[1]);
-	
 	switch(cmd)
 	{
 		case 'f':
@@ -255,44 +221,37 @@ void handleCommand(void *conn, const char *buffer)
 			commandPacket.command = COMMAND_FORWARD;
 			uartSendPacket(&commandPacket);
 			break;
-
 		case 'b':
 		case 'B':
 			commandPacket.command = COMMAND_REVERSE;
 			uartSendPacket(&commandPacket);
 			break;
-
 		case 'l':
 		case 'L':
 			commandPacket.command = COMMAND_TURN_LEFT;
 			uartSendPacket(&commandPacket);
 			break;
-
 		case 'r':
 		case 'R':
 			commandPacket.command = COMMAND_TURN_RIGHT;
 			uartSendPacket(&commandPacket);
 			break;
-
 		case 's':
 		case 'S':
 			commandPacket.command = COMMAND_STOP;
 			uartSendPacket(&commandPacket);
 			break;
-
 		case 'c':
 		case 'C':
 			commandPacket.command = COMMAND_CLEAR_STATS;
 			commandPacket.params[0] = 0;
 			uartSendPacket(&commandPacket);
 			break;
-
 		case 'g':
 		case 'G':
 			commandPacket.command = COMMAND_GET_STATS;
 			uartSendPacket(&commandPacket);
 			break;
-		
 		case 'x':
 		case 'X':
 			commandPacket.command = COMMAND_GET_COLOR;
@@ -308,8 +267,6 @@ void handleCommand(void *conn, const char *buffer)
 			commandPacket.command = COMMAND_RICK_ROLL;
 			uartSendPacket(&commandPacket);
 			break;
-			
-			
 		default:
 			printf("Bad command\n");
 
@@ -324,9 +281,7 @@ void handleNetworkData(void *conn, const char *buffer, int len)
         we assume that whatever we get back from the Arduino is meant for the most
         recent client, so we just simply store conn, which contains the TLS
         connection, in a global variable called tls_conn */
-
         tls_conn = conn; // This is used by sendNetworkData
-
 	if(buffer[0] == NET_COMMAND_PACKET)
 		handleCommand(conn, buffer);
 }
@@ -334,25 +289,19 @@ void handleNetworkData(void *conn, const char *buffer, int len)
 void *worker(void *conn)
 {
 	int len;
-
 	char buffer[BUF_LEN];
-	
 	while(networkActive)
 	{
-		/* TODO: Implement SSL read into buffer */
+		/* Implement SSL read into buffer */
 		len = sslRead(conn, buffer, sizeof(buffer));
-
-		/* END TODO */
 		// As long as we are getting data, network is active
 		networkActive=(len > 0);
-
 		if(len > 0)
 			handleNetworkData(conn, buffer, len);
 		else
 			if(len < 0)
 				perror("ERROR READING NETWORK: ");
 	}
-
     // Reset tls_conn to NULL.
     tls_conn = NULL;
     EXIT_THREAD(conn);
@@ -363,7 +312,6 @@ void sendHello()
 {
 	// Send a hello packet
 	TPacket helloPacket;
-
 	helloPacket.packetType = PACKET_TYPE_HELLO;
 	uartSendPacket(&helloPacket);
 }
@@ -371,37 +319,24 @@ void sendHello()
 int main()
 {
 	// Start the uartReceiveThread. The network thread is started by
-    // createServer
-
+    	// createServer
 	pthread_t serThread;
-
 	printf("\nALEX REMOTE SUBSYSTEM\n\n");
-
 	printf("Opening Serial Port\n");
 	// Open the serial port
 	startSerial(PORT_NAME, BAUD_RATE, 8, 'N', 1, 5);
 	printf("Done. Waiting 3 seconds for Arduino to reboot\n");
 	sleep(3);
-
 	printf("DONE. Starting Serial Listener\n");
 	pthread_create(&serThread, NULL, uartReceiveThread, NULL);
-
-    printf("Starting Alex Server\n");
-
-    networkActive = 1;
-
-    /* TODO: Call createServer with the necessary parameters to do client authentication and to send
+    	printf("Starting Alex Server\n");
+    	networkActive = 1;
+    	/* Call createServer with the necessary parameters to do client authentication and to send
         Alex's certificate. Use the #define names you defined earlier  */
 	createServer(ALEX_PRIVATE_KEY, ALEX_CERTIFICATE, SERVER_PORT, &worker, CA_CERTIFICATE, CLIENT_NAME, 1);
-
-
-    /* TODO END */
-
 	printf("DONE. Sending HELLO to Arduino\n");
 	sendHello();
 	printf("DONE.\n");
-
-
-    // Loop while the server is active
-    while(server_is_running());
+    	// Loop while the server is active
+    	while(server_is_running());
 }
