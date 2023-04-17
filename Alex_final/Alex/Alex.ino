@@ -5,7 +5,6 @@
 #include "constants.h"
 #include <math.h>
 
-
 typedef enum
 {
   STOP = 0,
@@ -16,11 +15,9 @@ typedef enum
 } TDirection;
 volatile TDirection dir = STOP;
 
-
 /*
    Alex's configuration constants
 */
-
 // Number of ticks per revolution from the
 // wheel encoder.
 
@@ -76,10 +73,8 @@ float alexCirc = 0;
 //Ultrasonic sensor variables
 long duration_front;
 int distance_front;
-
 long duration_left;
 int distance_left;
-
 long duration_right;
 int distance_right;
 
@@ -87,7 +82,7 @@ int distance_right;
 int frequency = 0;
 
 //Buzzer pin and musical note frequency definitions
-
+void rickroll();
 #define  NOTE_A3FLAT    208                    // 208 Hz
 #define  NOTE_B3FLAT    233                   // 233 Hz
 #define  NOTE_B3     247                     // 247 Hz
@@ -111,11 +106,8 @@ int frequency = 0;
 
 volatile int beatlength = 100; // determines tempo
 float beatseparationconstant = 0.3;
-
 int threshold;
-
 int note_index; // note index
-
 int song1_chorus_melody[] =
 { NOTE_B4FLAT, NOTE_B4FLAT, NOTE_A4FLAT, NOTE_A4FLAT,
   NOTE_F5, NOTE_F5, NOTE_E5FLAT, NOTE_B4FLAT, NOTE_B4FLAT, NOTE_A4FLAT, NOTE_A4FLAT, NOTE_E5FLAT, NOTE_E5FLAT, NOTE_C5SHARP, NOTE_C5, NOTE_B4FLAT,
@@ -126,7 +118,6 @@ int song1_chorus_melody[] =
   NOTE_C5SHARP, NOTE_C5SHARP, NOTE_C5SHARP, NOTE_C5SHARP,
   NOTE_C5SHARP, NOTE_E5FLAT, NOTE_C5, NOTE_B4FLAT, NOTE_A4FLAT, GAP, NOTE_A4FLAT, NOTE_E5FLAT, NOTE_C5SHARP, GAP
 };
-
 int song1_chorus_rhythmn[] =
 { 1, 1, 1, 1,
   3, 3, 6, 1, 1, 1, 1, 3, 3, 3, 1, 2,
@@ -141,7 +132,6 @@ int song1_chorus_rhythmn[] =
 /*
       Alex's State Variables
 */
-
 // Store the ticks from Alex's left and
 // right encoders.
 volatile unsigned long leftForwardTicks;
@@ -184,7 +174,6 @@ TBuffer _xmitBuffer;
    Alex Communication Routines.
 
 */
-
 TResult readPacket(TPacket *packet)
 {
   // Reads in data from the serial port and
@@ -252,19 +241,16 @@ void sendBadPacket()
 {
   // Tell the Pi that it sent us a packet with a bad
   // magic number.
-
   TPacket badPacket;
   badPacket.packetType = PACKET_TYPE_ERROR;
   badPacket.command = RESP_BAD_PACKET;
   sendResponse(&badPacket);
-
 }
 
 void sendBadChecksum()
 {
   // Tell the Pi that it sent us a packet with a bad
   // checksum.
-
   TPacket badChecksum;
   badChecksum.packetType = PACKET_TYPE_ERROR;
   badChecksum.command = RESP_BAD_CHECKSUM;
@@ -275,12 +261,10 @@ void sendBadCommand()
 {
   // Tell the Pi that we don't understand its
   // command sent to us.
-
   TPacket badCommand;
   badCommand.packetType = PACKET_TYPE_ERROR;
   badCommand.command = RESP_BAD_COMMAND;
   sendResponse(&badCommand);
-
 }
 
 void sendBadResponse()
@@ -305,7 +289,6 @@ void sendResponse(TPacket *packet)
   // over the serial port.
   char buffer[PACKET_SIZE];
   int len;
-
   len = serialize(buffer, packet, sizeof(TPacket));
   writeSerial(buffer, len);
 }
@@ -314,7 +297,6 @@ void sendResponse(TPacket *packet)
 /*
    Setup and start codes for external interrupts and
    pullup resistors.
-
 */
 // Enable pull up resistors on pins 2 and 3
 void enablePullups()
@@ -324,7 +306,6 @@ void enablePullups()
   // We set bits 2 and 3 in DDRD to 0 to make them inputs.
   DDRD &= ~(0b00001100);
   PORTD |= 0b00001100;
-
 }
 
 // Functions to be called by INT0 and INT1 ISRs.
@@ -334,20 +315,17 @@ void leftISR()
   {
     case (FORWARD):
       leftForwardTicks++;
-    //Serial.print("LEFT Forward: ");
-    //Serial.println(leftForwardTicks);
-    //forwardDist = (float)(WHEEL_CIRC / LEFT_COUNTS_PER_REV) * (leftForwardTicks);
+      break;
     case (BACKWARD):
       leftReverseTicks++;
-    //Serial.print("LEFT Reverse: ");
-    //Serial.println(leftReverseTicks);
-    //reverseDist = (float)(WHEEL_CIRC / LEFT_COUNTS_PER_REV) * (leftReverseTicks);
+      break;
     case (LEFT):
       leftReverseTicksTurns++;
+      break;
     case (RIGHT):
       leftForwardTicksTurns++;
+      break;
   }
-
   if (dir == FORWARD)
   {
     forwardDist = (unsigned long) ((float) leftForwardTicks / LEFT_COUNTS_PER_REV * WHEEL_CIRC);
@@ -364,18 +342,16 @@ void rightISR()
   {
     case (FORWARD):
       rightForwardTicks++;
-    //Serial.print("RIGHT Forward: ");
-    //Serial.println(rightForwardTicks);
-    //forwardDist = (float)(WHEEL_CIRC / RIGHT_COUNTS_PER_REV) * (rightForwardTicks);
+      break;
     case (BACKWARD):
       rightReverseTicks++;
-    //Serial.print("RIGHT Reverse: ");
-    //Serial.println(rightReverseTicks);
-    //forwardDist = (float)(WHEEL_CIRC / RIGHT_COUNTS_PER_REV) * (rightReverseTicks);
+      break;
     case (LEFT):
       rightForwardTicksTurns++;
+      break;
     case (RIGHT):
       rightReverseTicksTurns++;
+      break;
   }
 }
 
@@ -384,22 +360,16 @@ void rightISR()
 void setupEINT()
 {
   // Use bare-metal to configure pins 2 and 3 to be
-  // falling edge triggered. Remember to enable
+  // falling edge triggered. Enabled
   // the INT0 and INT1 interrupts.
-
   EICRA = 0b00001010;
-
   DDRD &= 0b11110011;
-
   EIMSK = 0b00000011;
-
 }
 
 // Implement the external interrupt ISRs below.
 // INT0 ISR should call leftISR while INT1 ISR
 // should call rightISR.
-
-
 ISR(INT0_vect)
 {
   leftISR();
@@ -409,7 +379,6 @@ ISR(INT1_vect)
 {
   rightISR();
 }
-// Implement INT0 and INT1 ISRs above.
 
 /*
    Setup and start codes for serial communications
@@ -431,91 +400,54 @@ ISR(USART_UDRE_vect)
   unsigned char data;
   TBufferResult result;
   result = readBuffer(&_xmitBuffer, &data);
+  //if there is data in buffer, transfer to UDR0
+  //else disable udre interrupt after done transmitting buffer
   if (result == BUFFER_OK)
   {
     UDR0 = data;
   } else if (result == BUFFER_EMPTY)
   {
-    //disable udre interrupt after done transmitting buffer
     UCSR0B &= 0b11011111;
   }
 }
 
 void setupSerial()
 {
-  // To replace later with bare-metal.
-  //Serial.begin(9600);
-
-  //set baud rate to 9600
+  //set baud rate to 9600 and initialize our transmit and receive buffers
   initBuffer(&_recvBuffer, BUFFER_LEN);
   initBuffer(&_xmitBuffer, BUFFER_LEN);
   UBRR0L = 103;
   UBRR0H = 0;
-
   //asynchronous uart, no parity, 1 stop bit, 8 bit data size per packet
   UCSR0C = 0b00000110;
-
   //0 the ucsr0a register first
   UCSR0A = 0;
-
 }
 
-// Start the serial connection. For now we are using
-// Arduino wiring and this function is empty. We will
-// replace this later with bare-metal code.
-
+// Start the serial connection.
 void startSerial()
 {
-  // Empty for now. To be replaced with bare-metal code
-  // later on.
   //enable interrupts for uarts and enabling transmitters and receivers
   UCSR0B = 0b10111000;
-
 }
 
-// Read the serial port. Returns the read character in
-// ch if available. Also returns TRUE if ch is valid.
-// This will be replaced later with bare-metal code.
-
+// Read the serial port. 
 int readSerial(char *buffer)
 {
-
+  //check if there is data in the receive buffer, continue to read from it until empty
   int count = 0;
-
-  /*TBufferResult result;
-    do
-    {
-  	result = readBuffer(&_recvBuffer, (unsigned char *)&buffer[count]);
-  	if(result == BUFFER_OK)
-  	{
-  		count++;
-  	}
-    }while(result == BUFFER_OK);*/
-  //while(Serial.available())
-  //	buffer[count++] = Serial.read();
   TBufferResult result = BUFFER_OK;
   for (count = 0; dataAvailable(&_recvBuffer) && result == BUFFER_OK; count += 1)
   {
     result = readBuffer(&_recvBuffer, (unsigned char*)&buffer[count]);
   }
-
   return count;
-
 }
 
-// Write to the serial port. Replaced later with
-// bare-metal code
-
+// Write to the serial port.
 void writeSerial(const char *buffer, int len)
 {
-  //Serial.write(buffer, len);
-  /*TBufferResult result = BUFFER_OK;
-    for (int pos = 0; pos < len && result == BUFFER_OK; pos++)
-    {
-  	result = writeBuffer(&_xmitBuffer, buffer[pos]);
-    }
-    //load first bit of data to send out
-    UDR0 = buffer[0];*/
+  //write to the transmit buffer which will copy the array contents one by 1 to UDR0 to be pushed out in the interrupt function
   TBufferResult result = BUFFER_OK;
   for (int pos = 1; pos < len && result == BUFFER_OK; pos++)
   {
@@ -530,7 +462,6 @@ void writeSerial(const char *buffer, int len)
    Alex's motor drivers.
 
 */
-
 // Set up Alex's motors. Right now this is empty, but
 // later you will replace it with code to set up the PWMs
 // to drive the motors.
@@ -542,8 +473,6 @@ void setupMotors()
         B1IN - Pin 10, PB2, OC1B
         B2In - pIN 11, PB3, OC2A
   */
-
-
   //setup pwm for timers 0 and 2 first since they are the same
   //set prescaler at 256
   TCCR0A = 0b00000001;
@@ -552,19 +481,14 @@ void setupMotors()
   TCCR2A = 0b00000001;
   TCCR2B = 0b00000100;
   TCNT2 = 0;
-
   //setup pwm for timer 1
   //mode 3 phase correct 8 bits
   TCCR1A =  0b00000001;
   TCCR1B = 0b00000100;
   TCNT1 = 0;
-
-
 }
 
 // Start the PWM for Alex's motors.
-// We will implement this later. For now it is
-// blank.
 void startMotors()
 {
   DDRD |= 0b01100000;
@@ -610,23 +534,6 @@ void forward(float dist, float speed)
     deltaDist = 9999999;
   }
   newDist = forwardDist + deltaDist;
-
-  // For now we will ignore dist and move
-  // forward indefinitely. We will fix this
-  // in Week 9.
-
-  // LF = Left forward pin, LR = Left reverse pin
-  // RF = Right forward pin, RR = Right reverse pin
-  // This will be replaced later with bare-metal code.
-  // turn on bare metal pwm
-  //TCCR0A |= 0b00100000;
-  //TCCR2A |= 0b00000000;
-  //TCCR1A |= 0b00100000;
-
-  //analogWrite(LF, val);
-  //analogWrite(RF, val);
-  //analogWrite(LR,0);
-  //analogWrite(RR, 0);
 }
 
 // Reverse Alex "dist" cm at speed "speed".
@@ -636,7 +543,6 @@ void forward(float dist, float speed)
 // continue reversing indefinitely.
 void reverse(float dist, float speed)
 {
-
   dir = BACKWARD;
   int val = pwmVal(speed);
   //baremetal wpm setting
@@ -650,22 +556,6 @@ void reverse(float dist, float speed)
     deltaDist = 9999999;
   }
   newDist = reverseDist + deltaDist;
-
-  // For now we will ignore dist and
-  // reverse indefinitely. We will fix this
-  // in Week 9.
-  // turn on bare metal pwm
-  //TCCR0A |= 0b10000000;
-  //TCCR2A |= 0b10000000;
-  //TCCR1A |= 0b00000000;
-
-  // LF = Left forward pin, LR = Left reverse pin
-  // RF = Right forward pin, RR = Right reverse pin
-  // This will be replaced later with bare-metal code.
-  //analogWrite(LR, val);
-  //analogWrite(RR, val);
-  //analogWrite(LF, 0);
-  //analogWrite(RF, 0);
 }
 
 //function to estimate number of wheel ticks needed to turn an angle for left wheel
@@ -724,21 +614,6 @@ void left(float ang, float speed)
   //baremetal wpm setting
   RIGHT_FORWARD_REGISTER = val;
   LEFT_REVERSE_REGISTER = val;
-
-  // For now we will ignore ang. We will fix this in Week 9.
-  // We will also replace this code with bare-metal later.
-  // To turn left we reverse the left wheel and move
-  // the right wheel forward.
-  // turn on bare metal pwm
-  //TCCR0A |= 0b10000000;
-  //TCCR2A |= 0b00000000;
-  //TCCR1A |= 0b00100000;
-
-
-  //analogWrite(LR, val);
-  //analogWrite(RF, val);
-  //analogWrite(LF, 0);
-  //analogWrite(RR, 0);
 }
 
 // Turn Alex right "ang" degrees at speed "speed".
@@ -765,20 +640,6 @@ void right(float ang, float speed)
   }
   leftTargetTicks = leftForwardTicksTurns + leftDeltaTicks;
   rightTargetTicks = rightReverseTicksTurns + rightDeltaTicks;
-
-  // For now we will ignore ang. We will fix this in Week 9.
-  // We will also replace this code with bare-metal later.
-  // To turn right we reverse the right wheel and move
-  // the left wheel forward.
-  // turn on bare metal pwm
-  //TCCR0A |= 0b00100000;
-  //TCCR2A |= 0b10000000;
-  //TCCR1A |= 0b00000000;
-
-  //analogWrite(RR, val);
-  //analogWrite(LF, val);
-  //analogWrite(LR, 0);
-  //analogWrite(RF, 0);
 }
 
 // Stop Alex. To replace with bare-metal code later.
@@ -789,15 +650,6 @@ void stop()
   RIGHT_FORWARD_REGISTER = 0;
   LEFT_REVERSE_REGISTER = 0;
   RIGHT_REVERSE_REGISTER = 0;
-  //analogWrite(LF, 0);
-  //analogWrite(LR, 0);
-  //analogWrite(RF, 0);
-  //analogWrite(RR, 0);
-  // turn on bare metal pwm
-  //TCCR0A &= ~(0b11110000);
-  //TCCR2A &= ~(0b11110000);
-  //TCCR1A &= ~(0b11110000);
-
 }
 
 void setupColorSensor()
@@ -806,7 +658,6 @@ void setupColorSensor()
   DDRC |= ((COLOR_S0) | (COLOR_S1));
   DDRB |= ((COLOR_S2) | (COLOR_S3));
   DDRB &= ~(COLOR_OUTPUT);
-
   //Setting frequency scaling to 20% by setting S0 to HIGH and S1 to LOW
   PORTC |= COLOR_S0;
   PORTC &= ~(COLOR_S1);
@@ -818,61 +669,39 @@ void readColorValues()
   TPacket colorPacket;
   colorPacket.packetType = PACKET_TYPE_RESPONSE;
   colorPacket.command = RESP_COLOR;
-
   //Read red color values first
-
   //Setting red filtered photodiodes to be read
   PORTB &= ~((COLOR_S2) | (COLOR_S3));
-
   //Reading output frequency
   frequency = pulseIn(13, LOW);
   colorPacket.params[0] = frequency;
-
-  //Printing value on serial monitor
-  //Serial.print("R= ");
-  //Serial.print(frequency);
-  //Serial.print(" ");
   delay(100);
-
   //Setting Green filtered photodiodes to be read
   PORTB |= ((COLOR_S2) | (COLOR_S3));
-
   //Reading output frequency
   frequency = pulseIn(13, LOW);
   colorPacket.params[1] = frequency;
-
-  //Printing value on serial monitor
-  //Serial.print("G= ");
-  //Serial.print(frequency);
-  //Serial.print(" ");
   delay(100);
-
   //Setting BLUE filtered photodiodes to be read
   PORTB &= ~(COLOR_S2);
   PORTB |= (COLOR_S3);
-
   //Reading output frequency
   frequency = pulseIn(13, LOW);
   colorPacket.params[2] = frequency;
-
-  //Printing value on serial monitor
-  //Serial.print("B= ");
-  //Serial.print(frequency);
-  //Serial.print(" ");
   delay(100);
-
-  //Serial.println("");
   //determine if color detected is red or green: 1 for red, 0 for green
+  // if red, play the alert tune(rickroll)
   if (colorPacket.params[0] < colorPacket.params[1])
   {
     colorPacket.params[3] = 1;
+    rickroll();
   } else
   {
     colorPacket.params[3] = 0;
   }
-
+  
+  //send response packet containing readings to raspberry pi
   sendResponse(&colorPacket);
-
 }
 
 void setupUltrasonic()
@@ -880,85 +709,56 @@ void setupUltrasonic()
   DDRC |= (TRIG_PIN_FRONT | TRIG_PIN_LEFT | TRIG_PIN_RIGHT);
   DDRB &= ~(ECHO_PIN_FRONT);
   DDRD &= ~(ECHO_PIN_LEFT | ECHO_PIN_RIGHT);
-
-
-  //Serial.begin(9600);
 }
-
 
 void getUltrasonic()
 {
   TPacket ultrasonicPacket;
   ultrasonicPacket.packetType = PACKET_TYPE_RESPONSE;
   ultrasonicPacket.command = RESP_ULTRASONIC;
-
+  
   //SETTING UP FRONT ULTRASONIC SENSOR
   PORTC &= ~(TRIG_PIN_FRONT);
-
-  //digitalWrite(TRIG_PIN_FRONT, LOW);
   delayMicroseconds(2);
-
   //Sets the TRIG_PIN_FRONT on HIGH state for 10 micro seconds
   PORTC |= TRIG_PIN_FRONT;
-  //digitalWrite(TRIG_PIN_FRONT, HIGH);
   delayMicroseconds(10);
   PORTC &= ~(TRIG_PIN_FRONT);
-  //digitalWrite(TRIG_PIN_FRONT, LOW);
-
   //Reads the ECHO_PIN_FRONT, returns the sound wave travel time in microseconds
   duration_front = pulseIn(ECHO_ORIG_FRONT, HIGH);
-
-  //Calculating the distance
+  //Calculating the distance using forumla duration*speed(in cm)/2 since distance is 2 way
   distance_front = duration_front * 0.034 / 2;
   ultrasonicPacket.params[0] = distance_front;
-  //dbprintf("%d", distance_front);
-
-
+  
   //SETTING UP LEFT ULTRASONIC SENSOR
   PORTC &= ~(TRIG_PIN_LEFT);
-
-  //digitalWrite(TRIG_PIN_FRONT, LOW);
   delayMicroseconds(2);
-
   //Sets the TRIG_PIN_FRONT on HIGH state for 10 micro seconds
   PORTC |= TRIG_PIN_LEFT;
-  //digitalWrite(TRIG_PIN_FRONT, HIGH);
   delayMicroseconds(10);
   PORTC &= ~(TRIG_PIN_LEFT);
-  //digitalWrite(TRIG_PIN_FRONT, LOW);
-
   //Reads the ECHO_PIN_FRONT, returns the sound wave travel time in microseconds
   duration_left = pulseIn(ECHO_ORIG_LEFT, HIGH);
-
   //Calculating the distance
   distance_left = duration_left * 0.034 / 2;
   ultrasonicPacket.params[1] = distance_left;
-  //dbprintf("%d", distance_front);
-
-
+  
   //SETTING UP RIGHT ULTRASONIC SENSOR
   PORTC &= ~(TRIG_PIN_RIGHT);
-
   //digitalWrite(TRIG_PIN_RIGHT, LOW);
   delayMicroseconds(2);
-
   //Sets the TRIG_PIN_FRONT on HIGH state for 10 micro seconds
   PORTC |= TRIG_PIN_RIGHT;
-  //digitalWrite(TRIG_PIN_RIGHT, HIGH);
   delayMicroseconds(10);
   PORTC &= ~(TRIG_PIN_RIGHT);
-  //digitalWrite(TRIG_PIN_FRONT, LOW);
-
   //Reads the ECHO_PIN_FRONT, returns the sound wave travel time in microseconds
   duration_right = pulseIn(ECHO_ORIG_RIGHT, HIGH);
-
   //Calculating the distance
   distance_right = duration_right * 0.034 / 2;
   ultrasonicPacket.params[2] = distance_right;
-  //dbprintf("%d", distance_front);
+ 
+  //send a response packet containing readings to raspberry pi
   sendResponse(&ultrasonicPacket);
-  //Serial.print("distance_front: ");
-  //Serial.println(distance_front);
 }
 
 //Buzzer setup and run codes
@@ -971,13 +771,12 @@ void setupBuzzer()
 }
 
 //Function to replace tone() on the Arduino library to prevent PWM pins from being affected
-
+//simulate a 50%pwm cycle with different frequencies
 void sound(byte pin, uint16_t frequency, uint16_t duration)
 {
   unsigned long startTime = millis();
   unsigned long halfPeriod = 1000000L / frequency / 2;
   DDRC |= BUZZER_PIN_BARE;
-
   while (millis() - startTime < duration)
   {
     PORTC |= BUZZER_PIN_BARE;
@@ -986,7 +785,6 @@ void sound(byte pin, uint16_t frequency, uint16_t duration)
     delayMicroseconds(halfPeriod);
   }
   DDRC &= ~(BUZZER_PIN_BARE);
-
 }
 
 void rickroll()
@@ -994,32 +792,25 @@ void rickroll()
   for (int i = 0; i < 59; i++)
   {
     int notelength;
-
     // chorus
     notelength = beatlength * song1_chorus_rhythmn[note_index];
-    if (song1_chorus_melody[note_index] > 0) {
-
+    if (song1_chorus_melody[note_index] > 0) 
+    {
       sound(BUZZER_PIN, song1_chorus_melody[note_index], notelength/6);
     }
     note_index++;
-    if (note_index >= sizeof(song1_chorus_melody) / sizeof(int)) {
-
+    if (note_index >= sizeof(song1_chorus_melody) / sizeof(int)) 
+    {
       note_index = 0;
     }
-
     delay(notelength/6);
-    //noTone(BUZZER_PIN);
-
-    //delay(notelength * beatseparationconstant);
   }
 }
-
 
 /*
    Alex's setup and run codes
 
 */
-
 // Clears all our counters
 void clearCounters()
 {
@@ -1037,43 +828,13 @@ void clearCounters()
   reverseDist = 0;
 }
 
-// Clears one particular counter
+// Clears all counters
 void clearOneCounter(int which)
 {
   clearCounters();
-  /*switch(which)
-    {
-    case 0:
-    clearCounters();
-    break;
-
-    case 1:
-    leftTicks=0;
-    break;
-
-    case 2:
-    rightTicks=0;
-    break;
-
-    case 3:
-    leftRevs=0;
-    break;
-
-    case 4:
-    rightRevs=0;
-    break;
-
-    case 5:
-    forwardDist=0;
-    break;
-
-    case 6:
-    reverseDist=0;
-    break;
-    } */
 }
-// Intialize Vincet's internal states
 
+// Intialize Vincet's internal states
 void initializeState()
 {
   clearCounters();
@@ -1121,12 +882,6 @@ void handleCommand(TPacket *command)
       sendOK();
       rickroll();
       break;
-
-    /*
-       Implement code for other commands here.
-
-    */
-
     default:
       sendBadCommand();
   }
@@ -1135,23 +890,18 @@ void handleCommand(TPacket *command)
 void waitForHello()
 {
   int exit = 0;
-
   while (!exit)
   {
     TPacket hello;
     TResult result;
-
     do
     {
       result = readPacket(&hello);
     } while (result == PACKET_INCOMPLETE);
-
     if (result == PACKET_OK)
     {
       if (hello.packetType == PACKET_TYPE_HELLO)
       {
-
-
         sendOK();
         exit = 1;
       }
@@ -1168,7 +918,8 @@ void waitForHello()
 }
 
 
-void setup() {
+void setup() 
+{
   // put your setup code here, to run once:
   alexDiagonal = sqrt((ALEX_LENGTH * ALEX_LENGTH) + (ALEX_BREADTH * ALEX_BREADTH));
   alexCirc = PI * alexDiagonal;
@@ -1193,38 +944,20 @@ void handlePacket(TPacket *packet)
     case PACKET_TYPE_COMMAND:
       handleCommand(packet);
       break;
-
     case PACKET_TYPE_RESPONSE:
       break;
-
     case PACKET_TYPE_ERROR:
       break;
-
     case PACKET_TYPE_MESSAGE:
       break;
-
     case PACKET_TYPE_HELLO:
       break;
   }
 }
 
 void loop() {
-
-  // Uncomment the code below for Step 2 of Activity 3 in Week 8 Studio 2
-
-  //forward(0, 100);
-
-  // Uncomment the code below for Week 9 Studio 2
-
-
-  // put your main code here, to run repeatedly:
-
-  //getUltrasonic();
-
   TPacket recvPacket; // This holds commands from the Pi
-
   TResult result = readPacket(&recvPacket);
-
   if (result == PACKET_OK)
     handlePacket(&recvPacket);
   else if (result == PACKET_BAD)
@@ -1235,7 +968,8 @@ void loop() {
   {
     sendBadChecksum();
   }
-
+  
+  //moving forward/backward conditions for arduino. it will continue moving in specified direction until hall sensors ticks reaches a certain amount
   if (deltaDist > 0)
   {
     if (dir == FORWARD)
@@ -1263,6 +997,8 @@ void loop() {
       stop();
     }
   }
+  
+  //turning conditions for the arduino. it will continue to turn left or right until the hall sensor ticks reaches a certain amount
   if (leftDeltaTicks > 0 || rightDeltaTicks > 0)
   {
     if (dir == LEFT)
