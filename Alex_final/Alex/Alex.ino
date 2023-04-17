@@ -170,26 +170,20 @@ TBuffer _recvBuffer;
 TBuffer _xmitBuffer;
 
 /*
-
    Alex Communication Routines.
-
 */
 TResult readPacket(TPacket *packet)
 {
   // Reads in data from the serial port and
   // deserializes it.Returns deserialized
   // data in "packet".
-
   char buffer[PACKET_SIZE];
   int len;
-
   len = readSerial(buffer);
-
   if (len == 0)
     return PACKET_INCOMPLETE;
   else
     return deserialize(buffer, len, packet);
-
 }
 
 void sendStatus()
@@ -215,14 +209,12 @@ void sendStatus()
   statusPacket.params[8] = forwardDist;
   statusPacket.params[9] = reverseDist;
   sendResponse(&statusPacket);
-
 }
 
 void sendMessage(const char *message)
 {
   // Sends text messages back to the Pi. Useful
   // for debugging.
-
   TPacket messagePacket;
   messagePacket.packetType = PACKET_TYPE_MESSAGE;
   strncpy(messagePacket.data, message, MAX_STR_LEN);
