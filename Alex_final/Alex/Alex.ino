@@ -683,13 +683,16 @@ void readColorValues()
   delay(100);
   //determine if color detected is red or green: 1 for red, 0 for green
   // if red, play the alert tune(rickroll)
-  if (colorPacket.params[0] < colorPacket.params[1])
+  if (colorPacket.params[0] < colorPacket.params[1] && colorPacket.params[2] > 1000)
   {
     colorPacket.params[3] = 1;
     rickroll();
-  } else
+  } else if(colorPacket.params[0] > colorPacket.params[1] && colorPacket.params[2] > 1000)
   {
     colorPacket.params[3] = 0;
+  } else
+  {
+    colorPacket.params[3] = 2;
   }
   
   //send response packet containing readings to raspberry pi
