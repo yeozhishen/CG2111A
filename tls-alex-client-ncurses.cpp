@@ -73,6 +73,9 @@ void handleColor(const char *buffer)
 	}else if(data[3] == 0)
 	{
 		printw("DETECTED COLOR IS: GREEN\n");
+	} else
+	{
+		printw("DETECTED COLOR IS: FALSE COLOR\n");
 	}
 	printw("\n---------------------------------------\n\n");
 }
