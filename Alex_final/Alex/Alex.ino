@@ -683,7 +683,8 @@ void readColorValues()
   delay(100);
   //determine if color detected is red or green: 1 for red, 0 for green
   // if red, play the alert tune(rickroll)
-  if (colorPacket.params[0] < colorPacket.params[1] && colorPacket.params[2] > 1000)
+  //for red, the cratio of red intensity to green intensity must be less than 50%
+  if ((100*((float)colorPacket.params[0]/colorPacket.params[1])) < 50 && colorPacket.params[2] > 1000)
   {
     colorPacket.params[3] = 1;
     rickroll();
