@@ -634,7 +634,7 @@ void right(float ang, float speed)
   rightTargetTicks = rightReverseTicksTurns + rightDeltaTicks;
 }
 
-// Stop Alex. To replace with bare-metal code later.
+// Stop Alex. 
 void stop()
 {
   dir = STOP;
